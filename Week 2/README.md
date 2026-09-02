@@ -112,4 +112,4 @@ The complete analysis and its development history will be maintained in the GitH
 
 ## GitHub Repository
 
-(**Repository:**) [https://github.com/Matioli-amoc/BIOL7800.git]
+**Repository:** [https://github.com/Matioli-amoc/BIOL7800.git]
