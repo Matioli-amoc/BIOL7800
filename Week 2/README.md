@@ -1,5 +1,5 @@
 
-# Week 2 Assignment – Testing Mindset
+# Week 2 Assignment - Testing Mindset
 
 ## Overview
 
