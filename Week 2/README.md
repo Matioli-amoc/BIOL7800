@@ -11,6 +11,13 @@ The dataset will contain 1,000 simulated genes from six samples (3 control and 3
 
 **Can a DESeq2 differential expression workflow reliably recover known treatment effects from simulated RNA-seq data?**
 
+### Why this analysis?
+
+My research involves sequencing data and differential expression analysis, but
+I have not previously used simulated RNA-seq data to systematically test an
+analysis pipeline using known-answer, negative-control, positive-control,
+invariant, redundancy, and determinism checks.
+
 ### Workflow
 
 ```text
