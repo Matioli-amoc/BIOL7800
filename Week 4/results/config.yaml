@@ -1,0 +1,27 @@
+date: Sep15_2026
+indir: /home/amc0369/mimic_data
+patho_species:
+- C_parvum
+host_name: H_sapiens_reviewed
+control_species:
+- E_tenella
+control_name: E_tenella
+k: 12
+n: 6
+mask: lowercase
+fileid: Cparvum_human.12mers_
+outdir: /home/amc0369/mimic_results/Cparvum_human
+log_file: /home/amc0369/mimic_results/Cparvum_human/Cparvum_human.12mers_Sep15_2026.log
+bit_diff: 2
+min_e: 0.01
+qsasa: 0.5
+lcr: 0.75
+b_str: '2'
+e_str: '01'
+q_str: '50'
+l_str: '75'
+runidI: Cparvum_human.12mers_b2_e01
+runidII: Cparvum_human.12mers_b2_e01_q50
+runidIII: Cparvum_human.12mers_b2_e01_q50_l75
+max_threads: 8
+dbsize: 15755963
