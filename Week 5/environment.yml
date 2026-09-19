@@ -1,0 +1,10 @@
+name: week5-mafft
+
+channels:
+  - conda-forge
+  - bioconda
+
+dependencies:
+  - mafft=7.526
+  - emboss=6.6.0
+  - curl

@@ -1,0 +1,7 @@
+# USA             Name        SeqLen	AlignLen	Gaps	GapLen	Ident	Similar	Differ	% Change	Weight	Description
+fasta::output/albumin_alignment.fasta:ALBU_BOVIN	ALBU_BOVIN    607	608	1	1	547	28	32	10.032895	1.000000	Albumin OS=Bos taurus OX=9913 GN=ALB PE=1 SV=4
+fasta::output/albumin_alignment.fasta:ALBU_SHEEP	ALBU_SHEEP    607	608	1	1	539	34	34	11.348684	1.000000	Albumin OS=Ovis aries OX=9940 GN=ALB PE=1 SV=1
+fasta::output/albumin_alignment.fasta:ALBU_PIG	ALBU_PIG      607	608	1	1	517	44	46	14.967105	1.000000	Albumin OS=Sus scrofa OX=9823 GN=ALB PE=1 SV=2
+fasta::output/albumin_alignment.fasta:ALBU_HORSE	ALBU_HORSE    607	608	1	1	493	63	51	18.914474	1.000000	Albumin OS=Equus caballus OX=9796 GN=ALB PE=1 SV=1
+fasta::output/albumin_alignment.fasta:ALBU_HUMAN	ALBU_HUMAN    609	609	0	0	506	51	52	16.912971	1.000000	Albumin OS=Homo sapiens OX=9606 GN=ALB PE=1 SV=2
+fasta::output/albumin_alignment.fasta:ALBU_MOUSE	ALBU_MOUSE    608	608	0	0	462	67	79	24.013159	1.000000	Albumin OS=Mus musculus OX=10090 GN=Alb PE=1 SV=3
