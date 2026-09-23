@@ -1,0 +1,18 @@
+Checking regenerated files against canonical SHA-256 values...
+input/reference.fasta: OK
+input/reads_R1.fastq: OK
+input/reads_R2.fastq: OK
+outputs/original.flagstat.txt: OK
+outputs/original.mapping_metrics.tsv: OK
+outputs/original.merqury.completeness.stats: OK
+outputs/original.merqury.qv: OK
+outputs/polished.fasta: OK
+outputs/polished.flagstat.txt: OK
+outputs/polished.mapping_metrics.tsv: OK
+outputs/polished.merqury.completeness.stats: OK
+outputs/polished.merqury.qv: OK
+outputs/summary.csv: OK
+
+The current run also produced:
+  CHECKSUMS.generated.txt
+REPRODUCIBILITY CHECK PASSED

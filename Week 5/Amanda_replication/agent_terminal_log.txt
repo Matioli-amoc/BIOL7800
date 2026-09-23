@@ -1,0 +1,2188 @@
+Agent terminal evidence, not a verbatim chat export. ANSI progress codes removed.
+
+
+===== evidence/AGENT_ACTIONS.md =====
+# Agent execution record
+
+This is an agent-authored action record, not a verbatim export of the chat transcript. Terminal stdout/stderr are preserved in the accompanying logs.
+
+- User requested independent reproduction from https://github.com/SachidaPokhrel/Replicability.git inside this directory.
+- Initial sandboxed git clone failed: could not resolve github.com. Retried with approved network access; clone succeeded. Commit and remote are recorded separately.
+- Inspected README.md, DATA_SOURCES.md, METHODS.md, environment.yml, run.sh, setup_and_run.sh, verify.sh, canonical CHECKSUMS.txt, committed scientific outputs and software provenance.
+- Copied canonical outputs, logs, metadata and CHECKSUMS.txt into evidence/canonical before execution; moved initial outputs to evidence/pre_run_outputs and created an empty outputs directory to prevent stale results being counted as reproduced.
+- Recorded canonical manifest's own SHA-256 in evidence/canonical_manifest.sha256.
+- Ran `CONDA_PKGS_DIRS="$PWD/.conda-pkgs" bash setup_and_run.sh` with pipefail, tee and preserved exit status. First sandboxed attempt failed due to network restrictions (setup_attempt_1.log/.exit).
+- Retried the same provided setup script with approved network access (setup_attempt_2.log/.exit). Used existing Conda executable, project-local package cache and environment; no changes to canonical checksums or analysis scripts.
+- Setup attempt 2 downloaded all public data. All three input SHA-256 values matched canonical hashes. Mapping completed with canonical metrics. NextPolish failed because its generated shell commands split the workspace path at the space in `Week 5`; saved logs and generated job/config files in evidence/attempt_2. No polished output was produced by this attempt.
+- Created `/tmp/amanda_replication_20260922` as a symlink to this repository (data remain in the requested directory). Created run.replication.sh from run.sh with only ROOT changed to this space-free alias; the exact diff is evidence/path_workaround.patch. Original run.sh remains unchanged.
+- Ran evidence/run_with_alias.sh, selecting the same installed tools using the alias for PATH, CONDA_PREFIX and MERQURY. Set OMP_NUM_THREADS=4 to limit Meryl/Merqury to the canonical thread count. Reused only the independently fetched, checksum-verified public inputs. Saved combined output and exit status as analysis_attempt_3.log/.exit.
+- Attempt 3 passed input splitting and alignment but failed to produce the first polished part: NextPolish's Conda launcher embeds an unquoted SCRIPT_PATH containing `Week 5`. The next merge stage failed. Preserved attempt 3 logs and work files under evidence/attempt_3.
+- Created evidence/bin/nextPolish as a copy of the installed launcher with only SCRIPT_PATH changed to the alias; retained the installed package unmodified. See evidence/nextpolish_path.patch. Updated evidence/run_with_alias.sh to put this launcher first on PATH and save attempt 4 separately. Restarted the full analysis.
+- Attempt 4 completed all seven analysis stages and generated hashes matching every canonical entry. Merqury's numeric outputs succeeded, but R's shell wrapper had unquoted embedded installation paths that prevented optional plots. Backed up that wrapper and changed only the embedded prefix to the space-free alias (R_path.patch); R and ggplot2 then loaded successfully.
+- Agent-side logging mistake: editing the still-running Bash wrapper to add alias recreation shifted its read offset; after completing the analysis it accidentally restarted the workflow and truncated its combined log. Interrupted the duplicate run (terminal exit 130). Preserved remaining stage logs, all complete scientific outputs/generated hashes, and the successful NextPolish pid136.log.info under evidence/attempt_4. The original canonical manifest was never changed. verification_first_complete.log records the actual canonical verification of these completed outputs.
+- Restarted a final full run with the now-stable wrapper and all path fixes, recording analysis_attempt_5.log/.exit, to preserve a complete clean execution log and regenerate diagnostic plots. No edits will be made to running scripts.
+- Final full run (attempt 5) completed all seven stages, exit 0, at 2026-09-23 00:48:19 UTC. Original/polished mapping metrics, polished FASTA and all Merqury scientific files exactly match canonical values. All 12 optional Merqury diagnostic PNGs were generated. Final stage/Merqury logs contain no matches for the recorded error scan; ordinary plotting warnings, if present, remain in raw logs.
+- Ran unmodified `bash verify.sh` against root CHECKSUMS.txt, teeing evidence/verification.log and preserving exit 0. All 13 files reported OK. Ran evidence/compare_outputs.py: 13/13 byte matches and exact summary match. Rechecked canonical manifest's own hash and git diff for canonical CHECKSUMS.txt, run.sh, setup_and_run.sh, verify.sh and environment.yml: unchanged.
+- Rechecked normalized original/polished sequences: exactly one C insertion, all other bases identical. Saved final nested Merqury and NextPolish logs under evidence/final_tool_logs.
+- Finalized REPLICATION_REPORT.md and packaged submission/CHECKSUMS.txt from CHECKSUMS.generated.txt, a readable terminal log and a compact evidence archive. Root canonical CHECKSUMS.txt and the parent's pre-existing CHECKSUMS.txt were not overwritten.
+
+
+===== evidence/setup_attempt_1.log =====
+Using existing Conda executable:
+  /home/amc0369/miniforge3/condabin/conda
+conda 25.11.1
+
+Creating project environment from environment.yml...
+Retrieving notices: - Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7b8f15598860>: Failed to resolve 'conda.anaconda.org' ([Errno -2] Name or service not known)")': /conda-forge/notices.json
+
+\ | / - \ | / - \ | / - \ | / - \ | / - Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7b8f154783e0>: Failed to resolve 'conda.anaconda.org' ([Errno -2] Name or service not known)")': /conda-forge/notices.json
+
+\ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7b8f15478320>: Failed to resolve 'conda.anaconda.org' ([Errno -2] Name or service not known)")': /conda-forge/notices.json
+
+ERROR conda.notices.fetch:get_channel_notice_response(72): Request error <HTTPSConnectionPool(host='conda.anaconda.org', port=443): Max retries exceeded with url: /conda-forge/notices.json (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7b8f15478590>: Failed to resolve 'conda.anaconda.org' ([Errno -2] Name or service not known)"))> for channel: conda-forge url: https://conda.anaconda.org/conda-forge/notices.json
+done
+ERROR conda.notices.core:wrapper(124): Unable to open cache file: [Errno 30] Read-only file system: '/home/amc0369/.cache/conda/notices/notices.cache'
+WARNING conda.core.prefix_data:validate_path(332): Environment paths should not contain spaces. Prefix: '/home/amc0369/BIOL7800/Week 5/amanda_replication/.conda-env'
+Channels:
+ - conda-forge
+ - bioconda
+Platform: linux-64
+Collecting package metadata (repodata.json): | Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7b8f14348890>: Failed to resolve 'conda.anaconda.org' ([Errno -2] Name or service not known)")': /bioconda/linux-64/repodata.json.zst
+
+Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7b8f14349730>: Failed to resolve 'conda.anaconda.org' ([Errno -2] Name or service not known)")': /bioconda/noarch/repodata.json.zst
+
+Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7b8f1434a120>: Failed to resolve 'conda.anaconda.org' ([Errno -2] Name or service not known)")': /conda-forge/linux-64/repodata.json.zst
+
+Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7b8f1434ad80>: Failed to resolve 'conda.anaconda.org' ([Errno -2] Name or service not known)")': /conda-forge/noarch/repodata.json.zst
+
+/ - \ | / - \ | / - \ | / - \ | / - \ | Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7b8f14349d30>: Failed to resolve 'conda.anaconda.org' ([Errno -2] Name or service not known)")': /bioconda/noarch/repodata.json.zst
+
+Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7b8f1434a2d0>: Failed to resolve 'conda.anaconda.org' ([Errno -2] Name or service not known)")': /conda-forge/linux-64/repodata.json.zst
+
+Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7b8f14349a00>: Failed to resolve 'conda.anaconda.org' ([Errno -2] Name or service not known)")': /bioconda/linux-64/repodata.json.zst
+
+Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7b8f1434af30>: Failed to resolve 'conda.anaconda.org' ([Errno -2] Name or service not known)")': /conda-forge/noarch/repodata.json.zst
+
+/ - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7b8f1434b110>: Failed to resolve 'conda.anaconda.org' ([Errno -2] Name or service not known)")': /bioconda/noarch/repodata.json.zst
+
+Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7b8f1434b530>: Failed to resolve 'conda.anaconda.org' ([Errno -2] Name or service not known)")': /bioconda/linux-64/repodata.json.zst
+
+Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7b8f1434b6b0>: Failed to resolve 'conda.anaconda.org' ([Errno -2] Name or service not known)")': /conda-forge/noarch/repodata.json.zst
+
+Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7b8f1434b350>: Failed to resolve 'conda.anaconda.org' ([Errno -2] Name or service not known)")': /conda-forge/linux-64/repodata.json.zst
+
+failed
+
+CondaHTTPError: HTTP 000 CONNECTION FAILED for url <https://conda.anaconda.org/conda-forge/linux-64/repodata.json>
+Elapsed: -
+
+An HTTP error occurred when trying to retrieve this URL.
+HTTP errors are often intermittent, and a simple retry will get you on your way.
+'https//conda.anaconda.org/conda-forge/linux-64'
+
+
+
+===== evidence/setup_attempt_2.log =====
+Using existing Conda executable:
+  /home/amc0369/miniforge3/condabin/conda
+conda 25.11.1
+
+Creating project environment from environment.yml...
+Retrieving notices: - \ | / done
+WARNING conda.core.prefix_data:validate_path(332): Environment paths should not contain spaces. Prefix: '/home/amc0369/BIOL7800/Week 5/amanda_replication/.conda-env'
+Channels:
+ - conda-forge
+ - bioconda
+Platform: linux-64
+Collecting package metadata (repodata.json): \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | done
+Solving environment: - \ | / done
+
+==> WARNING: A newer version of conda exists. <==
+    current version: 25.11.1
+    latest version: 26.7.2
+
+Please update conda by running
+
+    $ conda update -n base -c conda-forge conda
+
+Downloading and Extracting Packages: ...working...
+openjdk-23.0.2       | 181.4 MB  |            |   0% 
+
+gcc_impl_linux-64-16 | 82.3 MB   |            |   0% 
+
+sra-tools-3.2.1      | 61.0 MB   |            |   0% 
+
+sysroot_linux-64-2.3 | 40.1 MB   |            |   0% 
+
+r-base-4.2.3         | 24.0 MB   |            |   0% 
+
+python-3.11.16       | 22.1 MB   |            |   0% 
+
+libstdcxx-devel_linu | 21.1 MB   |            |   0% 
+
+gfortran_impl_linux- | 19.9 MB   |            |   0% 
+
+gxx_impl_linux-64-16 | 16.8 MB   |            |   0% 
+
+perl-5.32.1          | 12.8 MB   |            |   0% 
+
+icu-75.1             | 11.6 MB   |            |   0% 
+
+ncbi-vdb-3.4.1       | 8.8 MB    |            |   0% 
+
+nextpolish-1.4.1     | 8.7 MB    |            |   0% 
+
+libsanitizer-16.2.0  | 8.1 MB    |            |   0% 
+
+libpython-3.11.16    | 7.5 MB    |            |   0% 
+
+k8-1.2               | 7.2 MB    |            |   0% 
+
+libopenblas-0.3.34   | 6.5 MB    |            |   0% 
+
+libstdcxx-16.2.0     | 6.3 MB    |            |   0% 
+
+libcups-2.3.3        | 4.3 MB    |            |   0% 
+
+ ... (more hidden) ...
+
+gcc_impl_linux-64-16 | 82.3 MB   |            |   0% 
+
+sysroot_linux-64-2.3 | 40.1 MB   |            |   0% 
+openjdk-23.0.2       | 181.4 MB  |            |   0% 
+
+sra-tools-3.2.1      | 61.0 MB   |            |   0% 
+
+r-base-4.2.3         | 24.0 MB   |            |   0% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | 1          |   1% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | 1          |   2% 
+openjdk-23.0.2       | 181.4 MB  |            |   0% 
+
+sra-tools-3.2.1      | 61.0 MB   |            |   1% 
+
+r-base-4.2.3         | 24.0 MB   | 3          |   3% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | 2          |   2% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | 5          |   5% 
+openjdk-23.0.2       | 181.4 MB  | 1          |   1% 
+
+sra-tools-3.2.1      | 61.0 MB   | 2          |   2% 
+
+r-base-4.2.3         | 24.0 MB   | 6          |   7% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | 3          |   4% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | 7          |   7% 
+openjdk-23.0.2       | 181.4 MB  | 1          |   2% 
+
+sra-tools-3.2.1      | 61.0 MB   | 3          |   3% 
+
+r-base-4.2.3         | 24.0 MB   | #          |  11% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | 4          |   5% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | 9          |  10% 
+openjdk-23.0.2       | 181.4 MB  | 2          |   2% 
+
+sra-tools-3.2.1      | 61.0 MB   | 4          |   5% 
+
+r-base-4.2.3         | 24.0 MB   | #4         |  15% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | 6          |   6% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | #2         |  12% 
+openjdk-23.0.2       | 181.4 MB  | 2          |   3% 
+
+sra-tools-3.2.1      | 61.0 MB   | 6          |   7% 
+
+r-base-4.2.3         | 24.0 MB   | #8         |  19% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | 7          |   7% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | #4         |  14% 
+openjdk-23.0.2       | 181.4 MB  | 3          |   3% 
+
+sra-tools-3.2.1      | 61.0 MB   | 7          |   8% 
+
+r-base-4.2.3         | 24.0 MB   | ##2        |  22% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | 8          |   8% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | #6         |  16% 
+openjdk-23.0.2       | 181.4 MB  | 3          |   4% 
+
+sra-tools-3.2.1      | 61.0 MB   | 9          |  10% 
+
+r-base-4.2.3         | 24.0 MB   | ##6        |  26% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | 9          |   9% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | #9         |  19% 
+openjdk-23.0.2       | 181.4 MB  | 4          |   5% 
+
+sra-tools-3.2.1      | 61.0 MB   | #1         |  11% 
+
+r-base-4.2.3         | 24.0 MB   | ###        |  30% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #          |  11% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | ##1        |  22% 
+openjdk-23.0.2       | 181.4 MB  | 5          |   5% 
+
+sra-tools-3.2.1      | 61.0 MB   | #2         |  13% 
+
+r-base-4.2.3         | 24.0 MB   | ###4       |  34% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #1         |  12% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | ##4        |  25% 
+openjdk-23.0.2       | 181.4 MB  | 5          |   6% 
+
+sra-tools-3.2.1      | 61.0 MB   | #4         |  15% 
+
+r-base-4.2.3         | 24.0 MB   | ###9       |  40% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #3         |  13% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | ##7        |  28% 
+openjdk-23.0.2       | 181.4 MB  | 6          |   6% 
+
+sra-tools-3.2.1      | 61.0 MB   | #6         |  17% 
+
+r-base-4.2.3         | 24.0 MB   | ####4      |  45% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #4         |  14% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | ###        |  31% 
+openjdk-23.0.2       | 181.4 MB  | 7          |   7% 
+
+sra-tools-3.2.1      | 61.0 MB   | #8         |  19% 
+
+r-base-4.2.3         | 24.0 MB   | #####      |  50% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #5         |  16% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | ###3       |  34% 
+openjdk-23.0.2       | 181.4 MB  | 7          |   8% 
+
+sra-tools-3.2.1      | 61.0 MB   | ##         |  21% 
+
+r-base-4.2.3         | 24.0 MB   | #####5     |  55% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #7         |  17% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | ###6       |  37% 
+openjdk-23.0.2       | 181.4 MB  | 8          |   9% 
+
+sra-tools-3.2.1      | 61.0 MB   | ##2        |  23% 
+
+r-base-4.2.3         | 24.0 MB   | #####9     |  60% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #8         |  19% 
+openjdk-23.0.2       | 181.4 MB  | 9          |   9% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | ###9       |  40% 
+
+sra-tools-3.2.1      | 61.0 MB   | ##4        |  25% 
+
+r-base-4.2.3         | 24.0 MB   | ######4    |  65% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ##         |  20% 
+openjdk-23.0.2       | 181.4 MB  | 9          |  10% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | ####2      |  42% 
+
+sra-tools-3.2.1      | 61.0 MB   | ##6        |  27% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ##1        |  22% 
+
+r-base-4.2.3         | 24.0 MB   | ######9    |  69% 
+openjdk-23.0.2       | 181.4 MB  | #          |  11% 
+
+sra-tools-3.2.1      | 61.0 MB   | ##8        |  29% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | ####5      |  45% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ##3        |  23% 
+
+r-base-4.2.3         | 24.0 MB   | #######3   |  73% 
+openjdk-23.0.2       | 181.4 MB  | #1         |  11% 
+
+sra-tools-3.2.1      | 61.0 MB   | ###        |  30% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | ####7      |  47% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ##4        |  25% 
+
+r-base-4.2.3         | 24.0 MB   | #######7   |  78% 
+openjdk-23.0.2       | 181.4 MB  | #1         |  12% 
+
+sra-tools-3.2.1      | 61.0 MB   | ###2       |  32% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | ####9      |  50% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ##6        |  26% 
+
+r-base-4.2.3         | 24.0 MB   | ########2  |  82% 
+openjdk-23.0.2       | 181.4 MB  | #2         |  13% 
+
+sra-tools-3.2.1      | 61.0 MB   | ###3       |  34% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | #####2     |  52% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ##7        |  27% 
+
+r-base-4.2.3         | 24.0 MB   | ########6  |  87% 
+openjdk-23.0.2       | 181.4 MB  | #3         |  13% 
+
+sra-tools-3.2.1      | 61.0 MB   | ###5       |  36% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | #####4     |  55% 
+
+r-base-4.2.3         | 24.0 MB   | #########  |  91% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ##8        |  29% 
+openjdk-23.0.2       | 181.4 MB  | #3         |  14% 
+
+sra-tools-3.2.1      | 61.0 MB   | ###7       |  37% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | #####7     |  57% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ###        |  30% 
+
+r-base-4.2.3         | 24.0 MB   | #########5 |  95% 
+openjdk-23.0.2       | 181.4 MB  | #4         |  15% 
+
+sra-tools-3.2.1      | 61.0 MB   | ###9       |  39% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | #####9     |  59% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ###1       |  31% 
+
+r-base-4.2.3         | 24.0 MB   | #########9 | 100% 
+openjdk-23.0.2       | 181.4 MB  | #5         |  15% 
+
+sra-tools-3.2.1      | 61.0 MB   | ####1      |  41% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | ######1    |  62% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ###2       |  33% 
+openjdk-23.0.2       | 181.4 MB  | #5         |  16% 
+
+sra-tools-3.2.1      | 61.0 MB   | ####2      |  43% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | ######4    |  64% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ###4       |  34% 
+openjdk-23.0.2       | 181.4 MB  | #6         |  16% 
+
+sra-tools-3.2.1      | 61.0 MB   | ####4      |  45% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | ######6    |  67% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ###5       |  35% 
+openjdk-23.0.2       | 181.4 MB  | #7         |  17% 
+
+sra-tools-3.2.1      | 61.0 MB   | ####6      |  47% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | ######9    |  70% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ###6       |  37% 
+openjdk-23.0.2       | 181.4 MB  | #7         |  18% 
+
+sra-tools-3.2.1      | 61.0 MB   | ####8      |  49% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | #######2   |  72% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ###8       |  38% 
+openjdk-23.0.2       | 181.4 MB  | #8         |  19% 
+
+sra-tools-3.2.1      | 61.0 MB   | #####      |  51% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | #######4   |  75% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ###9       |  40% 
+openjdk-23.0.2       | 181.4 MB  | #9         |  19% 
+
+sra-tools-3.2.1      | 61.0 MB   | #####2     |  53% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | #######7   |  77% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ####1      |  41% 
+openjdk-23.0.2       | 181.4 MB  | ##         |  20% 
+
+sra-tools-3.2.1      | 61.0 MB   | #####4     |  55% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | ########   |  80% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ####2      |  42% 
+openjdk-23.0.2       | 181.4 MB  | ##         |  21% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | ########3  |  83% 
+
+sra-tools-3.2.1      | 61.0 MB   | #####6     |  56% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ####3      |  44% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | ########6  |  86% 
+openjdk-23.0.2       | 181.4 MB  | ##1        |  22% 
+
+sra-tools-3.2.1      | 61.0 MB   | #####8     |  58% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ####5      |  45% 
+openjdk-23.0.2       | 181.4 MB  | ##2        |  22% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | ########9  |  89% 
+
+sra-tools-3.2.1      | 61.0 MB   | ######     |  60% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ####6      |  47% 
+openjdk-23.0.2       | 181.4 MB  | ##2        |  23% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | #########1 |  92% 
+
+sra-tools-3.2.1      | 61.0 MB   | ######2    |  62% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ####8      |  48% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | #########4 |  95% 
+openjdk-23.0.2       | 181.4 MB  | ##3        |  24% 
+
+sra-tools-3.2.1      | 61.0 MB   | ######4    |  64% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ####9      |  50% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | #########7 |  98% 
+
+sra-tools-3.2.1      | 61.0 MB   | ######6    |  66% 
+openjdk-23.0.2       | 181.4 MB  | ##4        |  24% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #####      |  51% 
+
+sra-tools-3.2.1      | 61.0 MB   | ######8    |  68% 
+openjdk-23.0.2       | 181.4 MB  | ##5        |  25% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #####2     |  52% 
+
+sra-tools-3.2.1      | 61.0 MB   | #######    |  70% 
+openjdk-23.0.2       | 181.4 MB  | ##5        |  26% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #####3     |  54% 
+
+sra-tools-3.2.1      | 61.0 MB   | #######2   |  73% 
+openjdk-23.0.2       | 181.4 MB  | ##6        |  26% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #####4     |  55% 
+
+sra-tools-3.2.1      | 61.0 MB   | #######4   |  75% 
+openjdk-23.0.2       | 181.4 MB  | ##7        |  27% 
+
+r-base-4.2.3         | 24.0 MB   | ########## | 100% 
+
+sra-tools-3.2.1      | 61.0 MB   | #######6   |  77% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #####6     |  56% 
+
+python-3.11.16       | 22.1 MB   |            |   0% 
+openjdk-23.0.2       | 181.4 MB  | ##7        |  28% 
+
+python-3.11.16       | 22.1 MB   | 4          |   4% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #####7     |  58% 
+
+sra-tools-3.2.1      | 61.0 MB   | #######8   |  79% 
+openjdk-23.0.2       | 181.4 MB  | ##8        |  29% 
+
+python-3.11.16       | 22.1 MB   | 7          |   8% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #####8     |  59% 
+
+sra-tools-3.2.1      | 61.0 MB   | ########   |  81% 
+openjdk-23.0.2       | 181.4 MB  | ##9        |  29% 
+
+python-3.11.16       | 22.1 MB   | #1         |  11% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #####9     |  60% 
+
+sra-tools-3.2.1      | 61.0 MB   | ########2  |  82% 
+openjdk-23.0.2       | 181.4 MB  | ##9        |  30% 
+
+python-3.11.16       | 22.1 MB   | #5         |  16% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ######1    |  61% 
+
+sra-tools-3.2.1      | 61.0 MB   | ########3  |  84% 
+
+python-3.11.16       | 22.1 MB   | ##         |  21% 
+openjdk-23.0.2       | 181.4 MB  | ###        |  30% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ######2    |  62% 
+
+sra-tools-3.2.1      | 61.0 MB   | ########5  |  85% 
+
+python-3.11.16       | 22.1 MB   | ##5        |  25% 
+openjdk-23.0.2       | 181.4 MB  | ###        |  31% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ######3    |  64% 
+
+python-3.11.16       | 22.1 MB   | ##9        |  30% 
+
+sra-tools-3.2.1      | 61.0 MB   | ########7  |  87% 
+openjdk-23.0.2       | 181.4 MB  | ###1       |  31% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ######4    |  65% 
+
+python-3.11.16       | 22.1 MB   | ###3       |  34% 
+
+sra-tools-3.2.1      | 61.0 MB   | ########8  |  89% 
+openjdk-23.0.2       | 181.4 MB  | ###1       |  32% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ######5    |  66% 
+openjdk-23.0.2       | 181.4 MB  | ###2       |  32% 
+
+sra-tools-3.2.1      | 61.0 MB   | #########  |  90% 
+
+python-3.11.16       | 22.1 MB   | ###8       |  38% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ######6    |  67% 
+
+sra-tools-3.2.1      | 61.0 MB   | #########1 |  92% 
+openjdk-23.0.2       | 181.4 MB  | ###2       |  33% 
+
+python-3.11.16       | 22.1 MB   | ####2      |  42% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ######8    |  68% 
+openjdk-23.0.2       | 181.4 MB  | ###3       |  34% 
+
+sra-tools-3.2.1      | 61.0 MB   | #########3 |  93% 
+
+python-3.11.16       | 22.1 MB   | ####6      |  47% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ######9    |  69% 
+openjdk-23.0.2       | 181.4 MB  | ###4       |  34% 
+
+python-3.11.16       | 22.1 MB   | #####      |  51% 
+
+sra-tools-3.2.1      | 61.0 MB   | #########4 |  95% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #######    |  70% 
+openjdk-23.0.2       | 181.4 MB  | ###4       |  35% 
+
+sra-tools-3.2.1      | 61.0 MB   | #########6 |  96% 
+
+python-3.11.16       | 22.1 MB   | #####4     |  55% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #######1   |  72% 
+
+sra-tools-3.2.1      | 61.0 MB   | #########7 |  98% 
+openjdk-23.0.2       | 181.4 MB  | ###5       |  35% 
+
+python-3.11.16       | 22.1 MB   | #####8     |  59% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #######2   |  73% 
+
+sra-tools-3.2.1      | 61.0 MB   | #########9 |  99% 
+openjdk-23.0.2       | 181.4 MB  | ###5       |  36% 
+
+python-3.11.16       | 22.1 MB   | ######3    |  63% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #######4   |  74% 
+openjdk-23.0.2       | 181.4 MB  | ###6       |  36% 
+
+python-3.11.16       | 22.1 MB   | ######7    |  67% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #######5   |  75% 
+openjdk-23.0.2       | 181.4 MB  | ###6       |  37% 
+
+python-3.11.16       | 22.1 MB   | #######2   |  73% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #######6   |  76% 
+
+python-3.11.16       | 22.1 MB   | #######7   |  77% 
+openjdk-23.0.2       | 181.4 MB  | ###7       |  37% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #######7   |  78% 
+
+python-3.11.16       | 22.1 MB   | ########2  |  82% 
+openjdk-23.0.2       | 181.4 MB  | ###7       |  38% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #######9   |  79% 
+
+python-3.11.16       | 22.1 MB   | ########6  |  87% 
+openjdk-23.0.2       | 181.4 MB  | ###8       |  38% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ########   |  80% 
+
+python-3.11.16       | 22.1 MB   | #########1 |  92% 
+openjdk-23.0.2       | 181.4 MB  | ###8       |  39% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ########1  |  81% 
+
+python-3.11.16       | 22.1 MB   | #########6 |  97% 
+openjdk-23.0.2       | 181.4 MB  | ###9       |  39% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ########2  |  83% 
+openjdk-23.0.2       | 181.4 MB  | ###9       |  40% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ########4  |  84% 
+openjdk-23.0.2       | 181.4 MB  | ####       |  40% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ########5  |  85% 
+openjdk-23.0.2       | 181.4 MB  | ####       |  41% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ########6  |  86% 
+openjdk-23.0.2       | 181.4 MB  | ####1      |  41% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ########7  |  87% 
+openjdk-23.0.2       | 181.4 MB  | ####1      |  42% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ########8  |  89% 
+openjdk-23.0.2       | 181.4 MB  | ####2      |  42% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ########9  |  90% 
+openjdk-23.0.2       | 181.4 MB  | ####2      |  43% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #########  |  91% 
+openjdk-23.0.2       | 181.4 MB  | ####3      |  44% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #########2 |  92% 
+openjdk-23.0.2       | 181.4 MB  | ####4      |  44% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | ########## | 100% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #########3 |  93% 
+openjdk-23.0.2       | 181.4 MB  | ####4      |  45% 
+
+libstdcxx-devel_linu | 21.1 MB   |            |   0% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #########4 |  94% 
+openjdk-23.0.2       | 181.4 MB  | ####5      |  45% 
+
+libstdcxx-devel_linu | 21.1 MB   | 5          |   5% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #########5 |  95% 
+openjdk-23.0.2       | 181.4 MB  | ####5      |  46% 
+
+libstdcxx-devel_linu | 21.1 MB   | #          |  10% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #########6 |  97% 
+openjdk-23.0.2       | 181.4 MB  | ####6      |  46% 
+
+libstdcxx-devel_linu | 21.1 MB   | #4         |  14% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #########7 |  98% 
+openjdk-23.0.2       | 181.4 MB  | ####6      |  47% 
+
+libstdcxx-devel_linu | 21.1 MB   | #8         |  18% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #########8 |  99% 
+
+libstdcxx-devel_linu | 21.1 MB   | ##1        |  22% 
+openjdk-23.0.2       | 181.4 MB  | ####7      |  47% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | #########9 | 100% 
+
+libstdcxx-devel_linu | 21.1 MB   | ##5        |  26% 
+openjdk-23.0.2       | 181.4 MB  | ####7      |  48% 
+
+libstdcxx-devel_linu | 21.1 MB   | ###        |  31% 
+openjdk-23.0.2       | 181.4 MB  | ####8      |  48% 
+
+libstdcxx-devel_linu | 21.1 MB   | ###5       |  36% 
+openjdk-23.0.2       | 181.4 MB  | ####8      |  49% 
+
+libstdcxx-devel_linu | 21.1 MB   | ###9       |  40% 
+openjdk-23.0.2       | 181.4 MB  | ####9      |  49% 
+
+libstdcxx-devel_linu | 21.1 MB   | ####4      |  44% 
+openjdk-23.0.2       | 181.4 MB  | ####9      |  50% 
+
+python-3.11.16       | 22.1 MB   | ########## | 100% 
+
+libstdcxx-devel_linu | 21.1 MB   | ####8      |  49% 
+openjdk-23.0.2       | 181.4 MB  | #####      |  50% 
+
+gfortran_impl_linux- | 19.9 MB   |            |   0% 
+
+libstdcxx-devel_linu | 21.1 MB   | #####3     |  53% 
+openjdk-23.0.2       | 181.4 MB  | #####      |  51% 
+
+gfortran_impl_linux- | 19.9 MB   | 5          |   5% 
+
+libstdcxx-devel_linu | 21.1 MB   | #####7     |  57% 
+openjdk-23.0.2       | 181.4 MB  | #####1     |  51% 
+
+gfortran_impl_linux- | 19.9 MB   | 9          |  10% 
+
+libstdcxx-devel_linu | 21.1 MB   | ######1    |  62% 
+
+gfortran_impl_linux- | 19.9 MB   | #4         |  14% 
+openjdk-23.0.2       | 181.4 MB  | #####1     |  52% 
+
+gfortran_impl_linux- | 19.9 MB   | #8         |  19% 
+
+libstdcxx-devel_linu | 21.1 MB   | ######5    |  66% 
+openjdk-23.0.2       | 181.4 MB  | #####2     |  52% 
+
+gfortran_impl_linux- | 19.9 MB   | ##3        |  23% 
+
+libstdcxx-devel_linu | 21.1 MB   | ######9    |  70% 
+openjdk-23.0.2       | 181.4 MB  | #####2     |  53% 
+
+gfortran_impl_linux- | 19.9 MB   | ##7        |  28% 
+
+libstdcxx-devel_linu | 21.1 MB   | #######3   |  74% 
+openjdk-23.0.2       | 181.4 MB  | #####3     |  53% 
+
+gfortran_impl_linux- | 19.9 MB   | ###1       |  32% 
+
+libstdcxx-devel_linu | 21.1 MB   | #######7   |  77% 
+openjdk-23.0.2       | 181.4 MB  | #####3     |  54% 
+
+libstdcxx-devel_linu | 21.1 MB   | ########1  |  81% 
+
+gfortran_impl_linux- | 19.9 MB   | ###6       |  36% 
+openjdk-23.0.2       | 181.4 MB  | #####3     |  54% 
+
+libstdcxx-devel_linu | 21.1 MB   | ########6  |  86% 
+
+gfortran_impl_linux- | 19.9 MB   | ####1      |  41% 
+openjdk-23.0.2       | 181.4 MB  | #####4     |  54% 
+
+libstdcxx-devel_linu | 21.1 MB   | #########  |  90% 
+
+gfortran_impl_linux- | 19.9 MB   | ####5      |  46% 
+openjdk-23.0.2       | 181.4 MB  | #####4     |  55% 
+
+libstdcxx-devel_linu | 21.1 MB   | #########4 |  95% 
+
+gfortran_impl_linux- | 19.9 MB   | #####      |  51% 
+openjdk-23.0.2       | 181.4 MB  | #####5     |  55% 
+
+libstdcxx-devel_linu | 21.1 MB   | #########9 |  99% 
+
+gfortran_impl_linux- | 19.9 MB   | #####5     |  55% 
+openjdk-23.0.2       | 181.4 MB  | #####6     |  56% 
+
+gfortran_impl_linux- | 19.9 MB   | ######     |  60% 
+openjdk-23.0.2       | 181.4 MB  | #####6     |  57% 
+openjdk-23.0.2       | 181.4 MB  | #####7     |  57% 
+
+gfortran_impl_linux- | 19.9 MB   | ######4    |  65% 
+openjdk-23.0.2       | 181.4 MB  | #####7     |  58% 
+
+gfortran_impl_linux- | 19.9 MB   | ######9    |  69% 
+
+gfortran_impl_linux- | 19.9 MB   | #######4   |  75% 
+openjdk-23.0.2       | 181.4 MB  | #####8     |  58% 
+openjdk-23.0.2       | 181.4 MB  | #####8     |  59% 
+
+gfortran_impl_linux- | 19.9 MB   | #######9   |  79% 
+openjdk-23.0.2       | 181.4 MB  | #####9     |  60% 
+
+gfortran_impl_linux- | 19.9 MB   | ########4  |  85% 
+openjdk-23.0.2       | 181.4 MB  | ######     |  60% 
+
+gfortran_impl_linux- | 19.9 MB   | ########9  |  89% 
+openjdk-23.0.2       | 181.4 MB  | ######     |  61% 
+
+gfortran_impl_linux- | 19.9 MB   | #########3 |  94% 
+openjdk-23.0.2       | 181.4 MB  | ######1    |  61% 
+
+gfortran_impl_linux- | 19.9 MB   | #########8 |  99% 
+openjdk-23.0.2       | 181.4 MB  | ######1    |  62% 
+openjdk-23.0.2       | 181.4 MB  | ######2    |  62% 
+openjdk-23.0.2       | 181.4 MB  | ######3    |  63% 
+openjdk-23.0.2       | 181.4 MB  | ######3    |  64% 
+openjdk-23.0.2       | 181.4 MB  | ######4    |  64% 
+openjdk-23.0.2       | 181.4 MB  | ######4    |  65% 
+openjdk-23.0.2       | 181.4 MB  | ######5    |  65% 
+openjdk-23.0.2       | 181.4 MB  | ######6    |  66% 
+
+sra-tools-3.2.1      | 61.0 MB   | ########## | 100% 
+openjdk-23.0.2       | 181.4 MB  | ######6    |  67% 
+
+gxx_impl_linux-64-16 | 16.8 MB   |            |   0% 
+
+gxx_impl_linux-64-16 | 16.8 MB   | 5          |   5% 
+openjdk-23.0.2       | 181.4 MB  | ######7    |  67% 
+
+gxx_impl_linux-64-16 | 16.8 MB   | #1         |  12% 
+openjdk-23.0.2       | 181.4 MB  | ######7    |  68% 
+
+libstdcxx-devel_linu | 21.1 MB   | ########## | 100% 
+
+gxx_impl_linux-64-16 | 16.8 MB   | #8         |  18% 
+openjdk-23.0.2       | 181.4 MB  | ######8    |  68% 
+
+perl-5.32.1          | 12.8 MB   |            |   0% 
+
+gxx_impl_linux-64-16 | 16.8 MB   | ##4        |  24% 
+
+perl-5.32.1          | 12.8 MB   | 7          |   7% 
+openjdk-23.0.2       | 181.4 MB  | ######8    |  69% 
+
+gxx_impl_linux-64-16 | 16.8 MB   | ###        |  31% 
+
+perl-5.32.1          | 12.8 MB   | #4         |  15% 
+openjdk-23.0.2       | 181.4 MB  | ######9    |  69% 
+
+gxx_impl_linux-64-16 | 16.8 MB   | ###6       |  37% 
+
+perl-5.32.1          | 12.8 MB   | ##2        |  22% 
+openjdk-23.0.2       | 181.4 MB  | ######9    |  70% 
+
+gxx_impl_linux-64-16 | 16.8 MB   | ####3      |  43% 
+openjdk-23.0.2       | 181.4 MB  | #######    |  70% 
+
+perl-5.32.1          | 12.8 MB   | ##9        |  29% 
+
+gxx_impl_linux-64-16 | 16.8 MB   | ####9      |  49% 
+openjdk-23.0.2       | 181.4 MB  | #######    |  71% 
+
+perl-5.32.1          | 12.8 MB   | ###5       |  36% 
+
+gxx_impl_linux-64-16 | 16.8 MB   | #####4     |  55% 
+openjdk-23.0.2       | 181.4 MB  | #######1   |  71% 
+
+perl-5.32.1          | 12.8 MB   | ####2      |  42% 
+openjdk-23.0.2       | 181.4 MB  | #######1   |  72% 
+
+gxx_impl_linux-64-16 | 16.8 MB   | ######     |  61% 
+
+perl-5.32.1          | 12.8 MB   | ####8      |  49% 
+openjdk-23.0.2       | 181.4 MB  | #######2   |  72% 
+
+gxx_impl_linux-64-16 | 16.8 MB   | ######6    |  66% 
+
+perl-5.32.1          | 12.8 MB   | #####6     |  57% 
+
+gfortran_impl_linux- | 19.9 MB   | ########## | 100% 
+
+icu-75.1             | 11.6 MB   |            |   0% 
+
+gxx_impl_linux-64-16 | 16.8 MB   | #######1   |  72% 
+
+perl-5.32.1          | 12.8 MB   | ######4    |  64% 
+openjdk-23.0.2       | 181.4 MB  | #######2   |  73% 
+
+icu-75.1             | 11.6 MB   | 7          |   7% 
+
+gxx_impl_linux-64-16 | 16.8 MB   | #######6   |  77% 
+
+perl-5.32.1          | 12.8 MB   | #######1   |  71% 
+openjdk-23.0.2       | 181.4 MB  | #######3   |  73% 
+
+icu-75.1             | 11.6 MB   | #4         |  14% 
+
+gxx_impl_linux-64-16 | 16.8 MB   | ########2  |  82% 
+
+perl-5.32.1          | 12.8 MB   | #######7   |  78% 
+openjdk-23.0.2       | 181.4 MB  | #######3   |  74% 
+
+icu-75.1             | 11.6 MB   | ##2        |  22% 
+
+gxx_impl_linux-64-16 | 16.8 MB   | ########7  |  87% 
+
+perl-5.32.1          | 12.8 MB   | ########4  |  85% 
+openjdk-23.0.2       | 181.4 MB  | #######4   |  74% 
+
+icu-75.1             | 11.6 MB   | ###        |  31% 
+
+gxx_impl_linux-64-16 | 16.8 MB   | #########2 |  92% 
+openjdk-23.0.2       | 181.4 MB  | #######4   |  75% 
+
+perl-5.32.1          | 12.8 MB   | #########1 |  92% 
+
+icu-75.1             | 11.6 MB   | ###8       |  38% 
+
+gxx_impl_linux-64-16 | 16.8 MB   | #########7 |  98% 
+openjdk-23.0.2       | 181.4 MB  | #######5   |  75% 
+
+perl-5.32.1          | 12.8 MB   | #########8 |  99% 
+
+icu-75.1             | 11.6 MB   | ####5      |  46% 
+openjdk-23.0.2       | 181.4 MB  | #######6   |  76% 
+
+icu-75.1             | 11.6 MB   | #####3     |  53% 
+openjdk-23.0.2       | 181.4 MB  | #######6   |  77% 
+
+icu-75.1             | 11.6 MB   | ######     |  61% 
+openjdk-23.0.2       | 181.4 MB  | #######7   |  77% 
+
+icu-75.1             | 11.6 MB   | ######8    |  68% 
+openjdk-23.0.2       | 181.4 MB  | #######7   |  78% 
+
+icu-75.1             | 11.6 MB   | #######6   |  77% 
+openjdk-23.0.2       | 181.4 MB  | #######8   |  78% 
+
+icu-75.1             | 11.6 MB   | ########4  |  85% 
+openjdk-23.0.2       | 181.4 MB  | #######8   |  79% 
+
+icu-75.1             | 11.6 MB   | #########3 |  93% 
+openjdk-23.0.2       | 181.4 MB  | #######9   |  79% 
+openjdk-23.0.2       | 181.4 MB  | #######9   |  80% 
+openjdk-23.0.2       | 181.4 MB  | ########   |  80% 
+openjdk-23.0.2       | 181.4 MB  | ########   |  81% 
+openjdk-23.0.2       | 181.4 MB  | ########1  |  81% 
+openjdk-23.0.2       | 181.4 MB  | ########2  |  82% 
+
+perl-5.32.1          | 12.8 MB   | ########## | 100% 
+openjdk-23.0.2       | 181.4 MB  | ########2  |  83% 
+
+ncbi-vdb-3.4.1       | 8.8 MB    |            |   0% 
+openjdk-23.0.2       | 181.4 MB  | ########3  |  83% 
+
+ncbi-vdb-3.4.1       | 8.8 MB    | #1         |  12% 
+openjdk-23.0.2       | 181.4 MB  | ########3  |  84% 
+
+ncbi-vdb-3.4.1       | 8.8 MB    | ##4        |  25% 
+openjdk-23.0.2       | 181.4 MB  | ########4  |  84% 
+
+ncbi-vdb-3.4.1       | 8.8 MB    | ###6       |  37% 
+
+gxx_impl_linux-64-16 | 16.8 MB   | ########## | 100% 
+openjdk-23.0.2       | 181.4 MB  | ########4  |  85% 
+
+ncbi-vdb-3.4.1       | 8.8 MB    | ####8      |  49% 
+
+nextpolish-1.4.1     | 8.7 MB    |            |   0% 
+openjdk-23.0.2       | 181.4 MB  | ########5  |  85% 
+
+ncbi-vdb-3.4.1       | 8.8 MB    | ######     |  60% 
+
+icu-75.1             | 11.6 MB   | ########## | 100% 
+
+nextpolish-1.4.1     | 8.7 MB    | #          |  10% 
+
+libsanitizer-16.2.0  | 8.1 MB    |            |   0% 
+openjdk-23.0.2       | 181.4 MB  | ########5  |  86% 
+
+ncbi-vdb-3.4.1       | 8.8 MB    | #######1   |  71% 
+
+nextpolish-1.4.1     | 8.7 MB    | ##1        |  22% 
+
+libsanitizer-16.2.0  | 8.1 MB    | #          |  11% 
+openjdk-23.0.2       | 181.4 MB  | ########6  |  86% 
+
+ncbi-vdb-3.4.1       | 8.8 MB    | ########2  |  82% 
+
+nextpolish-1.4.1     | 8.7 MB    | ###3       |  33% 
+
+libsanitizer-16.2.0  | 8.1 MB    | ##1        |  22% 
+openjdk-23.0.2       | 181.4 MB  | ########6  |  87% 
+
+ncbi-vdb-3.4.1       | 8.8 MB    | #########2 |  93% 
+
+nextpolish-1.4.1     | 8.7 MB    | ####5      |  45% 
+
+libsanitizer-16.2.0  | 8.1 MB    | ###1       |  32% 
+openjdk-23.0.2       | 181.4 MB  | ########7  |  87% 
+
+nextpolish-1.4.1     | 8.7 MB    | #####6     |  57% 
+
+libsanitizer-16.2.0  | 8.1 MB    | ####2      |  42% 
+openjdk-23.0.2       | 181.4 MB  | ########7  |  88% 
+
+nextpolish-1.4.1     | 8.7 MB    | ######8    |  68% 
+
+libsanitizer-16.2.0  | 8.1 MB    | #####2     |  52% 
+openjdk-23.0.2       | 181.4 MB  | ########8  |  88% 
+
+nextpolish-1.4.1     | 8.7 MB    | #######9   |  80% 
+
+libsanitizer-16.2.0  | 8.1 MB    | ######3    |  63% 
+openjdk-23.0.2       | 181.4 MB  | ########8  |  89% 
+
+nextpolish-1.4.1     | 8.7 MB    | #########  |  90% 
+
+libsanitizer-16.2.0  | 8.1 MB    | #######3   |  73% 
+openjdk-23.0.2       | 181.4 MB  | ########9  |  89% 
+
+libsanitizer-16.2.0  | 8.1 MB    | ########3  |  84% 
+openjdk-23.0.2       | 181.4 MB  | ########9  |  90% 
+
+libsanitizer-16.2.0  | 8.1 MB    | #########4 |  94% 
+openjdk-23.0.2       | 181.4 MB  | #########  |  90% 
+openjdk-23.0.2       | 181.4 MB  | #########  |  91% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ########## | 100% 
+openjdk-23.0.2       | 181.4 MB  | #########1 |  91% 
+
+libpython-3.11.16    | 7.5 MB    |            |   0% 
+openjdk-23.0.2       | 181.4 MB  | #########1 |  92% 
+
+libpython-3.11.16    | 7.5 MB    | #3         |  14% 
+openjdk-23.0.2       | 181.4 MB  | #########2 |  92% 
+
+ncbi-vdb-3.4.1       | 8.8 MB    | ########## | 100% 
+
+libpython-3.11.16    | 7.5 MB    | ##8        |  28% 
+
+k8-1.2               | 7.2 MB    |            |   0% 
+openjdk-23.0.2       | 181.4 MB  | #########2 |  93% 
+
+libpython-3.11.16    | 7.5 MB    | ####2      |  42% 
+
+k8-1.2               | 7.2 MB    | #3         |  14% 
+openjdk-23.0.2       | 181.4 MB  | #########3 |  93% 
+
+libpython-3.11.16    | 7.5 MB    | #####7     |  58% 
+
+k8-1.2               | 7.2 MB    | ##7        |  27% 
+openjdk-23.0.2       | 181.4 MB  | #########3 |  94% 
+
+nextpolish-1.4.1     | 8.7 MB    | ########## | 100% 
+
+libpython-3.11.16    | 7.5 MB    | #######1   |  72% 
+
+libopenblas-0.3.34   | 6.5 MB    |            |   0% 
+
+k8-1.2               | 7.2 MB    | ###9       |  40% 
+openjdk-23.0.2       | 181.4 MB  | #########4 |  94% 
+
+libpython-3.11.16    | 7.5 MB    | ########6  |  86% 
+
+libopenblas-0.3.34   | 6.5 MB    | #3         |  13% 
+
+k8-1.2               | 7.2 MB    | #####2     |  52% 
+
+libsanitizer-16.2.0  | 8.1 MB    | ########## | 100% 
+openjdk-23.0.2       | 181.4 MB  | #########4 |  95% 
+
+libstdcxx-16.2.0     | 6.3 MB    |            |   0% 
+
+libpython-3.11.16    | 7.5 MB    | #########9 | 100% 
+
+libopenblas-0.3.34   | 6.5 MB    | ##5        |  26% 
+openjdk-23.0.2       | 181.4 MB  | #########5 |  95% 
+
+k8-1.2               | 7.2 MB    | ######4    |  65% 
+
+libstdcxx-16.2.0     | 6.3 MB    | #5         |  15% 
+
+libopenblas-0.3.34   | 6.5 MB    | ###7       |  38% 
+openjdk-23.0.2       | 181.4 MB  | #########5 |  95% 
+
+libstdcxx-16.2.0     | 6.3 MB    | ###1       |  32% 
+
+k8-1.2               | 7.2 MB    | #######5   |  76% 
+
+libopenblas-0.3.34   | 6.5 MB    | #####      |  51% 
+openjdk-23.0.2       | 181.4 MB  | #########5 |  96% 
+
+libstdcxx-16.2.0     | 6.3 MB    | ####8      |  49% 
+
+k8-1.2               | 7.2 MB    | ########6  |  87% 
+
+libopenblas-0.3.34   | 6.5 MB    | ######2    |  62% 
+openjdk-23.0.2       | 181.4 MB  | #########6 |  97% 
+
+libstdcxx-16.2.0     | 6.3 MB    | ######4    |  65% 
+
+k8-1.2               | 7.2 MB    | #########8 |  99% 
+
+libopenblas-0.3.34   | 6.5 MB    | #######4   |  74% 
+openjdk-23.0.2       | 181.4 MB  | #########6 |  97% 
+
+libstdcxx-16.2.0     | 6.3 MB    | ########   |  81% 
+
+libopenblas-0.3.34   | 6.5 MB    | ########6  |  87% 
+openjdk-23.0.2       | 181.4 MB  | #########7 |  97% 
+
+libopenblas-0.3.34   | 6.5 MB    | #########8 |  98% 
+
+libstdcxx-16.2.0     | 6.3 MB    | #########5 |  95% 
+openjdk-23.0.2       | 181.4 MB  | #########7 |  98% 
+openjdk-23.0.2       | 181.4 MB  | #########8 |  98% 
+
+libpython-3.11.16    | 7.5 MB    | ########## | 100% 
+openjdk-23.0.2       | 181.4 MB  | #########9 |  99% 
+
+libcups-2.3.3        | 4.3 MB    |            |   0% 
+openjdk-23.0.2       | 181.4 MB  | #########9 | 100% 
+
+libcups-2.3.3        | 4.3 MB    | ##1        |  22% 
+
+libcups-2.3.3        | 4.3 MB    | ####5      |  46% 
+
+k8-1.2               | 7.2 MB    | ########## | 100% 
+
+libcups-2.3.3        | 4.3 MB    | ######8    |  69% 
+
+ ... (more hidden) ...
+
+libcups-2.3.3        | 4.3 MB    | #########1 |  91% 
+
+libopenblas-0.3.34   | 6.5 MB    | ########## | 100% 
+
+libstdcxx-16.2.0     | 6.3 MB    | ########## | 100% 
+
+ ... (more hidden) ...
+
+ ... (more hidden) ...
+
+ ... (more hidden) ...
+
+ ... (more hidden) ...
+
+r-base-4.2.3         | 24.0 MB   | ########## | 100% 
+
+libcups-2.3.3        | 4.3 MB    | ########## | 100% 
+
+ ... (more hidden) ...
+openjdk-23.0.2       | 181.4 MB  | ########## | 100% 
+
+python-3.11.16       | 22.1 MB   | ########## | 100% 
+
+libstdcxx-devel_linu | 21.1 MB   | ########## | 100% 
+
+gfortran_impl_linux- | 19.9 MB   | ########## | 100% 
+
+sysroot_linux-64-2.3 | 40.1 MB   | ########## | 100% 
+
+gxx_impl_linux-64-16 | 16.8 MB   | ########## | 100% 
+
+icu-75.1             | 11.6 MB   | ########## | 100% 
+
+perl-5.32.1          | 12.8 MB   | ########## | 100% 
+
+ncbi-vdb-3.4.1       | 8.8 MB    | ########## | 100% 
+
+nextpolish-1.4.1     | 8.7 MB    | ########## | 100% 
+
+libsanitizer-16.2.0  | 8.1 MB    | ########## | 100% 
+
+libpython-3.11.16    | 7.5 MB    | ########## | 100% 
+
+gcc_impl_linux-64-16 | 82.3 MB   | ########## | 100% 
+
+libopenblas-0.3.34   | 6.5 MB    | ########## | 100% 
+
+libstdcxx-16.2.0     | 6.3 MB    | ########## | 100% 
+
+libcups-2.3.3        | 4.3 MB    | ########## | 100% 
+
+ ... (more hidden) ...
+
+k8-1.2               | 7.2 MB    | ########## | 100% 
+
+sra-tools-3.2.1      | 61.0 MB   | ########## | 100% 
+openjdk-23.0.2       | 181.4 MB  | ########## | 100% 
+
+                      
+
+                                                     
+
+                                                     
+
+                                                     
+
+                                                     
+
+                                                     
+
+                                                     
+
+                                                     
+
+                                                     
+
+                                                     
+
+                                                     
+
+                                                     
+
+                                                     
+
+                                                     
+
+                                                     
+
+                                                     
+
+                                                     
+
+                                                     
+
+                                                     
+
+                                                     
+
+ done
+Preparing transaction: \ | / - \ | / - \ done
+Verifying transaction: / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - done
+Executing transaction: | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - 
+    environment variable 'MERQURY' set to /home/amc0369/BIOL7800/Week 5/amanda_replication/.conda-env/share/merqury
+
+\ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ | / - \ done
+#
+# To activate this environment, use
+#
+#     $ conda activate "/home/amc0369/BIOL7800/Week 5/amanda_replication/.conda-env"
+#
+# To deactivate an active environment, use
+#
+#     $ conda deactivate
+
+======================================================================
+RUNNING ANALYSIS
+======================================================================
+
+===== 00_fetch_data =====
+Log: /home/amc0369/BIOL7800/Week 5/amanda_replication/logs/00_fetch_data.o
+Assembly accession : GCA_019704475.1
+Chromosome         : AP024628.1
+BioSample          : SAMD00163116
+Illumina run       : DRR172337
+SRA spots          : 300000
+
+Downloading reference chromosome...
+
+Retrieving first 300000 SRA spots from DRR172337...
+Read 300000 spots for DRR172337
+Written 300000 spots for DRR172337
+R1_records=300000
+R2_records=300000
+
+Finished:  2026-09-23T00:23:47Z
+Exit_code: 0
+
+===== 01_map_original =====
+Log: /home/amc0369/BIOL7800/Week 5/amanda_replication/logs/01_map_original.o
+Reference: /home/amc0369/BIOL7800/Week 5/amanda_replication/input/reference.fasta
+Label:     original
+[bwa_index] Pack FASTA... 0.05 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 1.77 seconds elapse.
+[bwa_index] Update BWT... 0.03 sec
+[bwa_index] Pack forward-only FASTA... 0.02 sec
+[bwa_index] Construct SA from BWT and Occ... 0.62 sec
+[main] Version: 0.7.19-r1273
+[main] CMD: bwa index /home/amc0369/BIOL7800/Week 5/amanda_replication/work/index_original/reference.fasta
+[main] Real time: 2.563 sec; CPU: 2.496 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 142804 sequences (40000021 bp)...
+[M::process] read 142982 sequences (40000282 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (1, 69344, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (274, 321, 362)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (98, 538)
+[M::mem_pestat] mean and std.dev: (315.46, 67.44)
+[M::mem_pestat] low and high boundaries for proper pairs: (10, 626)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 142804 reads in 17.281 CPU sec, 4.225 real sec
+[M::process] read 142738 sequences (40000530 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 69463, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (273, 321, 361)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (97, 537)
+[M::mem_pestat] mean and std.dev: (315.23, 67.30)
+[M::mem_pestat] low and high boundaries for proper pairs: (9, 625)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 142982 reads in 14.861 CPU sec, 3.634 real sec
+[M::process] read 142632 sequences (40000069 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 69316, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (273, 321, 361)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (97, 537)
+[M::mem_pestat] mean and std.dev: (315.20, 67.23)
+[M::mem_pestat] low and high boundaries for proper pairs: (9, 625)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 142738 reads in 15.746 CPU sec, 3.854 real sec
+[M::process] read 28844 sequences (8076599 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (1, 69275, 0, 1)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (273, 321, 361)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (97, 537)
+[M::mem_pestat] mean and std.dev: (315.35, 67.22)
+[M::mem_pestat] low and high boundaries for proper pairs: (9, 625)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 142632 reads in 15.610 CPU sec, 3.855 real sec
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 14008, 1, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (273, 321, 361)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (97, 537)
+[M::mem_pestat] mean and std.dev: (315.18, 67.28)
+[M::mem_pestat] low and high boundaries for proper pairs: (9, 625)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 28844 reads in 3.611 CPU sec, 0.830 real sec
+[main] Version: 0.7.19-r1273
+[main] CMD: bwa mem -t 4 /home/amc0369/BIOL7800/Week 5/amanda_replication/work/index_original/reference.fasta /home/amc0369/BIOL7800/Week 5/amanda_replication/input/reads_R1.fastq /home/amc0369/BIOL7800/Week 5/amanda_replication/input/reads_R2.fastq
+[main] Real time: 16.796 sec; CPU: 67.506 sec
+[bam_sort_core] merging from 0 files and 4 in-memory blocks...
+metric	value
+total_reads	601111
+primary_mapped_pct	99.52
+properly_paired_pct	99.17
+mean_depth	39.254981
+breadth_1x_pct	99.922791
+
+Finished:  2026-09-23T00:24:11Z
+Exit_code: 0
+
+===== 02_nextpolish =====
+Log: /home/amc0369/BIOL7800/Week 5/amanda_replication/logs/02_nextpolish.o
+NextPolish configuration:
+[General]
+job_type = local
+job_prefix = best3145
+task = 1212
+rewrite = yes
+deltmp = yes
+rerun = 3
+parallel_jobs = 1
+multithread_jobs = 4
+genome = /home/amc0369/BIOL7800/Week 5/amanda_replication/input/reference.fasta
+genome_size = auto
+workdir = /home/amc0369/BIOL7800/Week 5/amanda_replication/work/nextpolish
+polish_options = -p {multithread_jobs}
+
+[sgs_option]
+sgs_fofn = /home/amc0369/BIOL7800/Week 5/amanda_replication/work/sgs.fofn
+sgs_options = -max_depth 100 -bwa
+[9771 INFO] 2026-09-23 00:24:11 NextPolish start...
+[9771 INFO] 2026-09-23 00:24:11 version:1.4.1 logfile:pid9771.log.info
+[9771 WARNING] 2026-09-23 00:24:11 Re-write workdir
+[9771 INFO] 2026-09-23 00:24:11 scheduled tasks:
+[1, 2, 1, 2]
+[9771 INFO] 2026-09-23 00:24:11 options: 
+[9771 INFO] 2026-09-23 00:24:11 
+rerun:                        3
+rewrite:                      1
+kill:                         None
+cleantmp:                     0
+use_drmaa:                    0
+deltmp:                       True
+submit:                       None
+job_type:                     local
+sgs_unpaired:                 0
+sgs_rm_nread:                 1
+lgs_read_type:                
+parallel_jobs:                1
+align_threads:                4
+check_alive:                  None
+task:                         [1, 2, 1, 2]
+job_id_regex:                 None
+sgs_max_depth:                100
+lgs_max_depth:                100
+multithread_jobs:             4
+lgs_max_read_len:             0
+hifi_max_depth:               100
+job_prefix:                   best3145
+genome_size:                  4217110
+polish_options:               -p 4
+lgs_block_size:               500M
+lgs_min_read_len:             1k
+hifi_max_read_len:            0
+hifi_block_size:              500M
+hifi_min_read_len:            1k
+sgs_use_duplicate_reads:      0
+sgs_block_size:               421711000.0
+lgs_minimap2_options:         -x map-ont
+hifi_minimap2_options:        -x map-pb
+sgs_align_options:            bwa mem -p  -t 4
+sgs_fofn:                     /home/amc0369/BIOL7800/Week 5/amanda_replication/work/sgs.fofn
+workdir:                      /home/amc0369/BIOL7800/Week 5/amanda_replication/work/nextpolish
+genome:                       /home/amc0369/BIOL7800/Week 5/amanda_replication/input/reference.fasta
+snp_phase:                    /home/amc0369/BIOL7800/Week 5/amanda_replication/work/nextpolish/%02d.snp_phase
+snp_valid:                    /home/amc0369/BIOL7800/Week 5/amanda_replication/work/nextpolish/%02d.snp_valid
+lgs_polish:                   /home/amc0369/BIOL7800/Week 5/amanda_replication/work/nextpolish/%02d.lgs_polish
+kmer_count:                   /home/amc0369/BIOL7800/Week 5/amanda_replication/work/nextpolish/%02d.kmer_count
+hifi_polish:                  /home/amc0369/BIOL7800/Week 5/amanda_replication/work/nextpolish/%02d.hifi_polish
+score_chain:                  /home/amc0369/BIOL7800/Week 5/amanda_replication/work/nextpolish/%02d.score_chain
+[9771 INFO] 2026-09-23 00:24:11 step 0 and task 1 start:
+[9771 INFO] 2026-09-23 00:24:16 Total jobs: 3
+[9771 INFO] 2026-09-23 00:24:16 Submitted jobID:[9772] jobCmd:[/home/amc0369/BIOL7800/Week 5/amanda_replication/work/nextpolish/00.score_chain/01.db_split.sh.work/db_split1/best3145.sh] in the local_cycle.
+[9771 INFO] 2026-09-23 00:24:17 Submitted jobID:[9775] jobCmd:[/home/amc0369/BIOL7800/Week 5/amanda_replication/work/nextpolish/00.score_chain/01.db_split.sh.work/db_split2/best3145.sh] in the local_cycle.
+[9771 INFO] 2026-09-23 00:24:17 Submitted jobID:[9778] jobCmd:[/home/amc0369/BIOL7800/Week 5/amanda_replication/work/nextpolish/00.score_chain/01.db_split.sh.work/db_split3/best3145.sh] in the local_cycle.
+[9771 ERROR] 2026-09-23 00:24:23 db_split failed: please check the following logs:
+[9771 ERROR] 2026-09-23 00:24:23 /home/amc0369/BIOL7800/Week 5/amanda_replication/work/nextpolish/00.score_chain/01.db_split.sh.work/db_split1/best3145.sh.e
+[9771 ERROR] 2026-09-23 00:24:23 /home/amc0369/BIOL7800/Week 5/amanda_replication/work/nextpolish/00.score_chain/01.db_split.sh.work/db_split2/best3145.sh.e
+[9771 ERROR] 2026-09-23 00:24:23 /home/amc0369/BIOL7800/Week 5/amanda_replication/work/nextpolish/00.score_chain/01.db_split.sh.work/db_split3/best3145.sh.e
+ERROR: Expected non-empty file not found: /home/amc0369/BIOL7800/Week 5/amanda_replication/work/nextpolish/genome.nextpolish.fasta
+
+Finished:  2026-09-23T00:24:23Z
+Exit_code: 1
+ERROR: 02_nextpolish failed; inspect /home/amc0369/BIOL7800/Week 5/amanda_replication/logs/02_nextpolish.o
+ERROR conda.cli.main_run:execute(127): `conda run bash /home/amc0369/BIOL7800/Week 5/amanda_replication/run.sh` failed. (See above for error)
+
+
+===== evidence/analysis_attempt_3.log =====
+
+===== 00_fetch_data =====
+Log: /tmp/amanda_replication_20260922/logs/00_fetch_data.o
+Assembly accession : GCA_019704475.1
+Chromosome         : AP024628.1
+BioSample          : SAMD00163116
+Illumina run       : DRR172337
+SRA spots          : 300000
+Reference already exists; reusing it.
+FASTQ subset already exists; reusing it.
+R1_records=300000
+R2_records=300000
+
+Finished:  2026-09-23T00:24:56Z
+Exit_code: 0
+
+===== 01_map_original =====
+Log: /tmp/amanda_replication_20260922/logs/01_map_original.o
+Reference: /tmp/amanda_replication_20260922/input/reference.fasta
+Label:     original
+[bwa_index] Pack FASTA... 0.05 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 2.07 seconds elapse.
+[bwa_index] Update BWT... 0.04 sec
+[bwa_index] Pack forward-only FASTA... 0.03 sec
+[bwa_index] Construct SA from BWT and Occ... 0.71 sec
+[main] Version: 0.7.19-r1273
+[main] CMD: bwa index /tmp/amanda_replication_20260922/work/index_original/reference.fasta
+[main] Real time: 2.986 sec; CPU: 2.892 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 142804 sequences (40000021 bp)...
+[M::process] read 142982 sequences (40000282 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (1, 69344, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (274, 321, 362)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (98, 538)
+[M::mem_pestat] mean and std.dev: (315.46, 67.44)
+[M::mem_pestat] low and high boundaries for proper pairs: (10, 626)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 142804 reads in 16.899 CPU sec, 4.129 real sec
+[M::process] read 142738 sequences (40000530 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 69463, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (273, 321, 361)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (97, 537)
+[M::mem_pestat] mean and std.dev: (315.23, 67.30)
+[M::mem_pestat] low and high boundaries for proper pairs: (9, 625)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 142982 reads in 16.109 CPU sec, 3.920 real sec
+[M::process] read 142632 sequences (40000069 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 69316, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (273, 321, 361)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (97, 537)
+[M::mem_pestat] mean and std.dev: (315.20, 67.23)
+[M::mem_pestat] low and high boundaries for proper pairs: (9, 625)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 142738 reads in 17.345 CPU sec, 4.306 real sec
+[M::process] read 28844 sequences (8076599 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (1, 69275, 0, 1)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (273, 321, 361)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (97, 537)
+[M::mem_pestat] mean and std.dev: (315.35, 67.22)
+[M::mem_pestat] low and high boundaries for proper pairs: (9, 625)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 142632 reads in 16.392 CPU sec, 4.038 real sec
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 14008, 1, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (273, 321, 361)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (97, 537)
+[M::mem_pestat] mean and std.dev: (315.18, 67.28)
+[M::mem_pestat] low and high boundaries for proper pairs: (9, 625)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 28844 reads in 3.841 CPU sec, 0.887 real sec
+[main] Version: 0.7.19-r1273
+[main] CMD: bwa mem -t 4 /tmp/amanda_replication_20260922/work/index_original/reference.fasta /tmp/amanda_replication_20260922/input/reads_R1.fastq /tmp/amanda_replication_20260922/input/reads_R2.fastq
+[main] Real time: 17.724 sec; CPU: 71.030 sec
+[bam_sort_core] merging from 0 files and 4 in-memory blocks...
+metric	value
+total_reads	601111
+primary_mapped_pct	99.52
+properly_paired_pct	99.17
+mean_depth	39.254981
+breadth_1x_pct	99.922791
+
+Finished:  2026-09-23T00:25:22Z
+Exit_code: 0
+
+===== 02_nextpolish =====
+Log: /tmp/amanda_replication_20260922/logs/02_nextpolish.o
+NextPolish configuration:
+[General]
+job_type = local
+job_prefix = best3145
+task = 1212
+rewrite = yes
+deltmp = yes
+rerun = 3
+parallel_jobs = 1
+multithread_jobs = 4
+genome = /tmp/amanda_replication_20260922/input/reference.fasta
+genome_size = auto
+workdir = /tmp/amanda_replication_20260922/work/nextpolish
+polish_options = -p {multithread_jobs}
+
+[sgs_option]
+sgs_fofn = /tmp/amanda_replication_20260922/work/sgs.fofn
+sgs_options = -max_depth 100 -bwa
+[137 INFO] 2026-09-23 00:25:22 NextPolish start...
+[137 INFO] 2026-09-23 00:25:22 version:1.4.1 logfile:pid137.log.info
+[137 WARNING] 2026-09-23 00:25:22 Re-write workdir
+[137 INFO] 2026-09-23 00:25:22 scheduled tasks:
+[1, 2, 1, 2]
+[137 INFO] 2026-09-23 00:25:22 options: 
+[137 INFO] 2026-09-23 00:25:22 
+rerun:                        3
+rewrite:                      1
+kill:                         None
+cleantmp:                     0
+use_drmaa:                    0
+deltmp:                       True
+submit:                       None
+job_type:                     local
+sgs_unpaired:                 0
+sgs_rm_nread:                 1
+lgs_read_type:                
+parallel_jobs:                1
+align_threads:                4
+check_alive:                  None
+task:                         [1, 2, 1, 2]
+job_id_regex:                 None
+sgs_max_depth:                100
+lgs_max_depth:                100
+multithread_jobs:             4
+lgs_max_read_len:             0
+hifi_max_depth:               100
+job_prefix:                   best3145
+genome_size:                  4217110
+polish_options:               -p 4
+lgs_block_size:               500M
+lgs_min_read_len:             1k
+hifi_max_read_len:            0
+hifi_block_size:              500M
+hifi_min_read_len:            1k
+sgs_use_duplicate_reads:      0
+sgs_block_size:               421711000.0
+lgs_minimap2_options:         -x map-ont
+hifi_minimap2_options:        -x map-pb
+sgs_align_options:            bwa mem -p  -t 4
+sgs_fofn:                     /tmp/amanda_replication_20260922/work/sgs.fofn
+workdir:                      /tmp/amanda_replication_20260922/work/nextpolish
+genome:                       /tmp/amanda_replication_20260922/input/reference.fasta
+snp_phase:                    /tmp/amanda_replication_20260922/work/nextpolish/%02d.snp_phase
+snp_valid:                    /tmp/amanda_replication_20260922/work/nextpolish/%02d.snp_valid
+lgs_polish:                   /tmp/amanda_replication_20260922/work/nextpolish/%02d.lgs_polish
+kmer_count:                   /tmp/amanda_replication_20260922/work/nextpolish/%02d.kmer_count
+hifi_polish:                  /tmp/amanda_replication_20260922/work/nextpolish/%02d.hifi_polish
+score_chain:                  /tmp/amanda_replication_20260922/work/nextpolish/%02d.score_chain
+[137 INFO] 2026-09-23 00:25:22 step 0 and task 1 start:
+[137 INFO] 2026-09-23 00:25:27 Total jobs: 3
+[137 INFO] 2026-09-23 00:25:27 Submitted jobID:[138] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/00.score_chain/01.db_split.sh.work/db_split1/best3145.sh] in the local_cycle.
+[137 INFO] 2026-09-23 00:26:56 Submitted jobID:[149] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/00.score_chain/01.db_split.sh.work/db_split2/best3145.sh] in the local_cycle.
+[137 INFO] 2026-09-23 00:26:59 Submitted jobID:[156] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/00.score_chain/01.db_split.sh.work/db_split3/best3145.sh] in the local_cycle.
+[137 INFO] 2026-09-23 00:26:59 db_split done
+[137 INFO] 2026-09-23 00:27:04 Total jobs: 1
+[137 INFO] 2026-09-23 00:27:04 Submitted jobID:[165] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/00.score_chain/02.map.ref.sh.work/map_genome1/best3145.sh] in the local_cycle.
+[137 INFO] 2026-09-23 00:27:25 align_genome done
+[137 INFO] 2026-09-23 00:27:30 Total jobs: 1
+[137 INFO] 2026-09-23 00:27:30 Submitted jobID:[242] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/00.score_chain/03.merge.bam.sh.work/merge_bam1/best3145.sh] in the local_cycle.
+[137 INFO] 2026-09-23 00:27:37 merge_bam done
+[137 INFO] 2026-09-23 00:27:37 remove temporary result: /tmp/amanda_replication_20260922/work/nextpolish/00.score_chain/02.map.ref.sh.work/map_genome1/sgs.part000.sort.bam
+[137 INFO] 2026-09-23 00:27:42 Total jobs: 1
+[137 INFO] 2026-09-23 00:27:42 Submitted jobID:[266] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/00.score_chain/04.polish.ref.sh.work/polish_genome1/best3145.sh] in the local_cycle.
+[137 INFO] 2026-09-23 00:27:42 polish_genome done
+[137 INFO] 2026-09-23 00:27:42 remove temporary result: /tmp/amanda_replication_20260922/work/nextpolish/00.score_chain/sgs.sort.bam
+[137 INFO] 2026-09-23 00:27:42 step 1 and task 2 start:
+[137 INFO] 2026-09-23 00:27:47 Total jobs: 1
+[137 INFO] 2026-09-23 00:27:47 Submitted jobID:[275] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/01.kmer_count/01.merge.ref.sh.work/merge_ref1/merge_ref.sh] in the local_cycle.
+[275 CRITICAL] 2026-09-23 00:27:47 Command '/bin/sh /tmp/amanda_replication_20260922/work/nextpolish/01.kmer_count/01.merge.ref.sh.work/merge_ref1/merge_ref.sh > /tmp/amanda_replication_20260922/work/nextpolish/01.kmer_count/01.merge.ref.sh.work/merge_ref1/merge_ref.sh.o 2> /tmp/amanda_replication_20260922/work/nextpolish/01.kmer_count/01.merge.ref.sh.work/merge_ref1/merge_ref.sh.e' returned non-zero exit status 1, error info: .
+Traceback (most recent call last):
+  File "/tmp/amanda_replication_20260922/.conda-env/bin/nextPolish", line 553, in <module>
+    main(args)
+  File "/tmp/amanda_replication_20260922/.conda-env/bin/nextPolish", line 394, in main
+    genomefile = set_genome(Task, cfg, task, path)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/amanda_replication_20260922/.conda-env/bin/nextPolish", line 241, in set_genome
+    task.run.start()
+  File "/tmp/amanda_replication_20260922/.conda-env/lib/python3.11/site-packages/paralleltask/task_control.py", line 344, in start
+    self._start()
+  File "/tmp/amanda_replication_20260922/.conda-env/lib/python3.11/site-packages/paralleltask/task_control.py", line 368, in _start
+    self.submit(job)
+  File "/tmp/amanda_replication_20260922/.conda-env/lib/python3.11/site-packages/paralleltask/task_control.py", line 252, in submit
+    _, stdout, _ = self.run(job.cmd)
+                   ^^^^^^^^^^^^^^^^^
+  File "/tmp/amanda_replication_20260922/.conda-env/lib/python3.11/site-packages/paralleltask/task_control.py", line 288, in run
+    log.critical("Command '%s' returned non-zero exit status %d, error info: %s." % (cmd, p.returncode, stderr))
+  File "/tmp/amanda_replication_20260922/.conda-env/lib/python3.11/logging/__init__.py", line 1536, in critical
+    self._log(CRITICAL, msg, args, **kwargs)
+  File "/tmp/amanda_replication_20260922/.conda-env/lib/python3.11/logging/__init__.py", line 1634, in _log
+    self.handle(record)
+  File "/tmp/amanda_replication_20260922/.conda-env/lib/python3.11/logging/__init__.py", line 1644, in handle
+    self.callHandlers(record)
+  File "/tmp/amanda_replication_20260922/.conda-env/lib/python3.11/logging/__init__.py", line 1706, in callHandlers
+    hdlr.handle(record)
+  File "/tmp/amanda_replication_20260922/.conda-env/lib/python3.11/logging/__init__.py", line 978, in handle
+    self.emit(record)
+  File "/tmp/amanda_replication_20260922/.conda-env/lib/python3.11/site-packages/paralleltask/kit.py", line 42, in emit
+    raise Exception(record.msg)
+Exception: Command '/bin/sh /tmp/amanda_replication_20260922/work/nextpolish/01.kmer_count/01.merge.ref.sh.work/merge_ref1/merge_ref.sh > /tmp/amanda_replication_20260922/work/nextpolish/01.kmer_count/01.merge.ref.sh.work/merge_ref1/merge_ref.sh.o 2> /tmp/amanda_replication_20260922/work/nextpolish/01.kmer_count/01.merge.ref.sh.work/merge_ref1/merge_ref.sh.e' returned non-zero exit status 1, error info: .
+[137 ERROR] 2026-09-23 00:27:53 merge_ref failed: please check the following logs:
+[137 ERROR] 2026-09-23 00:27:53 /tmp/amanda_replication_20260922/work/nextpolish/01.kmer_count/01.merge.ref.sh.work/merge_ref1/merge_ref.sh.e
+ERROR: Expected non-empty file not found: /tmp/amanda_replication_20260922/work/nextpolish/genome.nextpolish.fasta
+
+Finished:  2026-09-23T00:27:53Z
+Exit_code: 1
+ERROR: 02_nextpolish failed; inspect /tmp/amanda_replication_20260922/logs/02_nextpolish.o
+
+
+===== evidence/analysis_attempt_5.log =====
+
+===== 00_fetch_data =====
+Log: /tmp/amanda_replication_20260922/logs/00_fetch_data.o
+Assembly accession : GCA_019704475.1
+Chromosome         : AP024628.1
+BioSample          : SAMD00163116
+Illumina run       : DRR172337
+SRA spots          : 300000
+Reference already exists; reusing it.
+FASTQ subset already exists; reusing it.
+R1_records=300000
+R2_records=300000
+
+Finished:  2026-09-23T00:38:29Z
+Exit_code: 0
+
+===== 01_map_original =====
+Log: /tmp/amanda_replication_20260922/logs/01_map_original.o
+Reference: /tmp/amanda_replication_20260922/input/reference.fasta
+Label:     original
+[bwa_index] Pack FASTA... 0.05 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 1.92 seconds elapse.
+[bwa_index] Update BWT... 0.04 sec
+[bwa_index] Pack forward-only FASTA... 0.03 sec
+[bwa_index] Construct SA from BWT and Occ... 0.71 sec
+[main] Version: 0.7.19-r1273
+[main] CMD: bwa index /tmp/amanda_replication_20260922/work/index_original/reference.fasta
+[main] Real time: 2.848 sec; CPU: 2.743 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 142804 sequences (40000021 bp)...
+[M::process] read 142982 sequences (40000282 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (1, 69344, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (274, 321, 362)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (98, 538)
+[M::mem_pestat] mean and std.dev: (315.46, 67.44)
+[M::mem_pestat] low and high boundaries for proper pairs: (10, 626)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 142804 reads in 16.637 CPU sec, 4.100 real sec
+[M::process] read 142738 sequences (40000530 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 69463, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (273, 321, 361)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (97, 537)
+[M::mem_pestat] mean and std.dev: (315.23, 67.30)
+[M::mem_pestat] low and high boundaries for proper pairs: (9, 625)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 142982 reads in 15.355 CPU sec, 3.756 real sec
+[M::process] read 142632 sequences (40000069 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 69316, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (273, 321, 361)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (97, 537)
+[M::mem_pestat] mean and std.dev: (315.20, 67.23)
+[M::mem_pestat] low and high boundaries for proper pairs: (9, 625)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 142738 reads in 16.704 CPU sec, 4.117 real sec
+[M::process] read 28844 sequences (8076599 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (1, 69275, 0, 1)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (273, 321, 361)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (97, 537)
+[M::mem_pestat] mean and std.dev: (315.35, 67.22)
+[M::mem_pestat] low and high boundaries for proper pairs: (9, 625)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 142632 reads in 15.922 CPU sec, 3.925 real sec
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 14008, 1, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (273, 321, 361)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (97, 537)
+[M::mem_pestat] mean and std.dev: (315.18, 67.28)
+[M::mem_pestat] low and high boundaries for proper pairs: (9, 625)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 28844 reads in 3.516 CPU sec, 0.809 real sec
+[main] Version: 0.7.19-r1273
+[main] CMD: bwa mem -t 4 /tmp/amanda_replication_20260922/work/index_original/reference.fasta /tmp/amanda_replication_20260922/input/reads_R1.fastq /tmp/amanda_replication_20260922/input/reads_R2.fastq
+[main] Real time: 17.113 sec; CPU: 68.542 sec
+[bam_sort_core] merging from 0 files and 4 in-memory blocks...
+metric	value
+total_reads	601111
+primary_mapped_pct	99.52
+properly_paired_pct	99.17
+mean_depth	39.254981
+breadth_1x_pct	99.922791
+
+Finished:  2026-09-23T00:38:55Z
+Exit_code: 0
+
+===== 02_nextpolish =====
+Log: /tmp/amanda_replication_20260922/logs/02_nextpolish.o
+NextPolish configuration:
+[General]
+job_type = local
+job_prefix = best3145
+task = 1212
+rewrite = yes
+deltmp = yes
+rerun = 3
+parallel_jobs = 1
+multithread_jobs = 4
+genome = /tmp/amanda_replication_20260922/input/reference.fasta
+genome_size = auto
+workdir = /tmp/amanda_replication_20260922/work/nextpolish
+polish_options = -p {multithread_jobs}
+
+[sgs_option]
+sgs_fofn = /tmp/amanda_replication_20260922/work/sgs.fofn
+sgs_options = -max_depth 100 -bwa
+[142 INFO] 2026-09-23 00:38:55 NextPolish start...
+[142 INFO] 2026-09-23 00:38:55 version:1.4.1 logfile:pid142.log.info
+[142 WARNING] 2026-09-23 00:38:55 Re-write workdir
+[142 INFO] 2026-09-23 00:38:55 scheduled tasks:
+[1, 2, 1, 2]
+[142 INFO] 2026-09-23 00:38:55 options: 
+[142 INFO] 2026-09-23 00:38:55 
+rerun:                        3
+rewrite:                      1
+kill:                         None
+cleantmp:                     0
+use_drmaa:                    0
+deltmp:                       True
+submit:                       None
+job_type:                     local
+sgs_unpaired:                 0
+sgs_rm_nread:                 1
+lgs_read_type:                
+parallel_jobs:                1
+align_threads:                4
+check_alive:                  None
+task:                         [1, 2, 1, 2]
+job_id_regex:                 None
+sgs_max_depth:                100
+lgs_max_depth:                100
+multithread_jobs:             4
+lgs_max_read_len:             0
+hifi_max_depth:               100
+job_prefix:                   best3145
+genome_size:                  4217110
+polish_options:               -p 4
+lgs_block_size:               500M
+lgs_min_read_len:             1k
+hifi_max_read_len:            0
+hifi_block_size:              500M
+hifi_min_read_len:            1k
+sgs_use_duplicate_reads:      0
+sgs_block_size:               421711000.0
+lgs_minimap2_options:         -x map-ont
+hifi_minimap2_options:        -x map-pb
+sgs_align_options:            bwa mem -p  -t 4
+sgs_fofn:                     /tmp/amanda_replication_20260922/work/sgs.fofn
+workdir:                      /tmp/amanda_replication_20260922/work/nextpolish
+genome:                       /tmp/amanda_replication_20260922/input/reference.fasta
+snp_phase:                    /tmp/amanda_replication_20260922/work/nextpolish/%02d.snp_phase
+snp_valid:                    /tmp/amanda_replication_20260922/work/nextpolish/%02d.snp_valid
+lgs_polish:                   /tmp/amanda_replication_20260922/work/nextpolish/%02d.lgs_polish
+kmer_count:                   /tmp/amanda_replication_20260922/work/nextpolish/%02d.kmer_count
+hifi_polish:                  /tmp/amanda_replication_20260922/work/nextpolish/%02d.hifi_polish
+score_chain:                  /tmp/amanda_replication_20260922/work/nextpolish/%02d.score_chain
+[142 INFO] 2026-09-23 00:38:55 step 0 and task 1 start:
+[142 INFO] 2026-09-23 00:39:00 Total jobs: 3
+[142 INFO] 2026-09-23 00:39:00 Submitted jobID:[143] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/00.score_chain/01.db_split.sh.work/db_split1/best3145.sh] in the local_cycle.
+[142 INFO] 2026-09-23 00:40:27 Submitted jobID:[154] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/00.score_chain/01.db_split.sh.work/db_split2/best3145.sh] in the local_cycle.
+[142 INFO] 2026-09-23 00:40:30 Submitted jobID:[161] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/00.score_chain/01.db_split.sh.work/db_split3/best3145.sh] in the local_cycle.
+[142 INFO] 2026-09-23 00:40:31 db_split done
+[142 INFO] 2026-09-23 00:40:36 Total jobs: 1
+[142 INFO] 2026-09-23 00:40:36 Submitted jobID:[170] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/00.score_chain/02.map.ref.sh.work/map_genome1/best3145.sh] in the local_cycle.
+[142 INFO] 2026-09-23 00:40:57 align_genome done
+[142 INFO] 2026-09-23 00:41:02 Total jobs: 1
+[142 INFO] 2026-09-23 00:41:02 Submitted jobID:[247] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/00.score_chain/03.merge.bam.sh.work/merge_bam1/best3145.sh] in the local_cycle.
+[142 INFO] 2026-09-23 00:41:09 merge_bam done
+[142 INFO] 2026-09-23 00:41:09 remove temporary result: /tmp/amanda_replication_20260922/work/nextpolish/00.score_chain/02.map.ref.sh.work/map_genome1/sgs.part000.sort.bam
+[142 INFO] 2026-09-23 00:41:14 Total jobs: 1
+[142 INFO] 2026-09-23 00:41:14 Submitted jobID:[271] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/00.score_chain/04.polish.ref.sh.work/polish_genome1/best3145.sh] in the local_cycle.
+[142 INFO] 2026-09-23 00:41:26 polish_genome done
+[142 INFO] 2026-09-23 00:41:26 remove temporary result: /tmp/amanda_replication_20260922/work/nextpolish/00.score_chain/sgs.sort.bam
+[142 INFO] 2026-09-23 00:41:26 step 1 and task 2 start:
+[142 INFO] 2026-09-23 00:41:31 Total jobs: 1
+[142 INFO] 2026-09-23 00:41:31 Submitted jobID:[287] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/01.kmer_count/01.merge.ref.sh.work/merge_ref1/merge_ref.sh] in the local_cycle.
+[142 INFO] 2026-09-23 00:41:32 merge_ref done
+[142 INFO] 2026-09-23 00:41:32 remove temporary result: /tmp/amanda_replication_20260922/work/nextpolish/00.score_chain/04.polish.ref.sh.work/polish_genome1/genome.nextpolish.part000.fasta
+[142 INFO] 2026-09-23 00:41:37 Total jobs: 2
+[142 INFO] 2026-09-23 00:41:37 Submitted jobID:[296] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/01.kmer_count/02.index.ref.sh.work/index_genome1/best3145.sh] in the local_cycle.
+[142 INFO] 2026-09-23 00:41:41 Submitted jobID:[303] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/01.kmer_count/02.index.ref.sh.work/index_genome2/best3145.sh] in the local_cycle.
+[142 INFO] 2026-09-23 00:41:41 index_genome done
+[142 INFO] 2026-09-23 00:41:46 Total jobs: 1
+[142 INFO] 2026-09-23 00:41:46 Submitted jobID:[312] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/01.kmer_count/03.map.ref.sh.work/map_genome1/best3145.sh] in the local_cycle.
+[142 INFO] 2026-09-23 00:42:10 align_genome done
+[142 INFO] 2026-09-23 00:42:15 Total jobs: 1
+[142 INFO] 2026-09-23 00:42:15 Submitted jobID:[389] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/01.kmer_count/04.merge.bam.sh.work/merge_bam1/best3145.sh] in the local_cycle.
+[142 INFO] 2026-09-23 00:42:22 merge_bam done
+[142 INFO] 2026-09-23 00:42:22 remove temporary result: /tmp/amanda_replication_20260922/work/nextpolish/01.kmer_count/03.map.ref.sh.work/map_genome1/sgs.part000.sort.bam
+[142 INFO] 2026-09-23 00:42:27 Total jobs: 1
+[142 INFO] 2026-09-23 00:42:27 Submitted jobID:[413] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/01.kmer_count/05.polish.ref.sh.work/polish_genome1/best3145.sh] in the local_cycle.
+[142 INFO] 2026-09-23 00:42:31 polish_genome done
+[142 INFO] 2026-09-23 00:42:31 remove temporary result: /tmp/amanda_replication_20260922/work/nextpolish/01.kmer_count/sgs.sort.bam
+[142 INFO] 2026-09-23 00:42:31 step 2 and task 1 start:
+[142 INFO] 2026-09-23 00:42:36 Total jobs: 1
+[142 INFO] 2026-09-23 00:42:36 Submitted jobID:[429] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/02.score_chain/01.merge.ref.sh.work/merge_ref1/merge_ref.sh] in the local_cycle.
+[142 INFO] 2026-09-23 00:42:37 merge_ref done
+[142 INFO] 2026-09-23 00:42:37 remove temporary result: /tmp/amanda_replication_20260922/work/nextpolish/01.kmer_count/05.polish.ref.sh.work/polish_genome1/genome.nextpolish.part000.fasta
+[142 INFO] 2026-09-23 00:42:42 Total jobs: 2
+[142 INFO] 2026-09-23 00:42:42 Submitted jobID:[438] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/02.score_chain/02.index.ref.sh.work/index_genome1/best3145.sh] in the local_cycle.
+[142 INFO] 2026-09-23 00:42:45 Submitted jobID:[445] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/02.score_chain/02.index.ref.sh.work/index_genome2/best3145.sh] in the local_cycle.
+[142 INFO] 2026-09-23 00:42:46 index_genome done
+[142 INFO] 2026-09-23 00:42:51 Total jobs: 1
+[142 INFO] 2026-09-23 00:42:51 Submitted jobID:[454] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/02.score_chain/03.map.ref.sh.work/map_genome1/best3145.sh] in the local_cycle.
+[142 INFO] 2026-09-23 00:43:12 align_genome done
+[142 INFO] 2026-09-23 00:43:17 Total jobs: 1
+[142 INFO] 2026-09-23 00:43:17 Submitted jobID:[531] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/02.score_chain/04.merge.bam.sh.work/merge_bam1/best3145.sh] in the local_cycle.
+[142 INFO] 2026-09-23 00:43:23 merge_bam done
+[142 INFO] 2026-09-23 00:43:23 remove temporary result: /tmp/amanda_replication_20260922/work/nextpolish/02.score_chain/03.map.ref.sh.work/map_genome1/sgs.part000.sort.bam
+[142 INFO] 2026-09-23 00:43:28 Total jobs: 1
+[142 INFO] 2026-09-23 00:43:28 Submitted jobID:[555] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/02.score_chain/05.polish.ref.sh.work/polish_genome1/best3145.sh] in the local_cycle.
+[142 INFO] 2026-09-23 00:43:37 polish_genome done
+[142 INFO] 2026-09-23 00:43:37 remove temporary result: /tmp/amanda_replication_20260922/work/nextpolish/02.score_chain/sgs.sort.bam
+[142 INFO] 2026-09-23 00:43:37 step 3 and task 2 start:
+[142 INFO] 2026-09-23 00:43:42 Total jobs: 1
+[142 INFO] 2026-09-23 00:43:42 Submitted jobID:[571] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/03.kmer_count/01.merge.ref.sh.work/merge_ref1/merge_ref.sh] in the local_cycle.
+[142 INFO] 2026-09-23 00:43:44 merge_ref done
+[142 INFO] 2026-09-23 00:43:44 remove temporary result: /tmp/amanda_replication_20260922/work/nextpolish/02.score_chain/05.polish.ref.sh.work/polish_genome1/genome.nextpolish.part000.fasta
+[142 INFO] 2026-09-23 00:43:49 Total jobs: 2
+[142 INFO] 2026-09-23 00:43:49 Submitted jobID:[580] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/03.kmer_count/02.index.ref.sh.work/index_genome1/best3145.sh] in the local_cycle.
+[142 INFO] 2026-09-23 00:43:52 Submitted jobID:[587] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/03.kmer_count/02.index.ref.sh.work/index_genome2/best3145.sh] in the local_cycle.
+[142 INFO] 2026-09-23 00:43:52 index_genome done
+[142 INFO] 2026-09-23 00:43:57 Total jobs: 1
+[142 INFO] 2026-09-23 00:43:57 Submitted jobID:[596] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/03.kmer_count/03.map.ref.sh.work/map_genome1/best3145.sh] in the local_cycle.
+[142 INFO] 2026-09-23 00:44:18 align_genome done
+[142 INFO] 2026-09-23 00:44:23 Total jobs: 1
+[142 INFO] 2026-09-23 00:44:23 Submitted jobID:[673] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/03.kmer_count/04.merge.bam.sh.work/merge_bam1/best3145.sh] in the local_cycle.
+[142 INFO] 2026-09-23 00:44:30 merge_bam done
+[142 INFO] 2026-09-23 00:44:30 remove temporary result: /tmp/amanda_replication_20260922/work/nextpolish/03.kmer_count/03.map.ref.sh.work/map_genome1/sgs.part000.sort.bam
+[142 INFO] 2026-09-23 00:44:35 Total jobs: 1
+[142 INFO] 2026-09-23 00:44:35 Submitted jobID:[697] jobCmd:[/tmp/amanda_replication_20260922/work/nextpolish/03.kmer_count/05.polish.ref.sh.work/polish_genome1/best3145.sh] in the local_cycle.
+[142 INFO] 2026-09-23 00:44:39 polish_genome done
+[142 INFO] 2026-09-23 00:44:39 remove temporary result: /tmp/amanda_replication_20260922/work/nextpolish/03.kmer_count/sgs.sort.bam
+[142 INFO] 2026-09-23 00:44:39 nextPolish has finished
+[142 INFO] 2026-09-23 00:44:39 final polished genome files:
+[142 INFO] 2026-09-23 00:44:39  /tmp/amanda_replication_20260922/work/nextpolish/genome.nextpolish.fasta 
+[142 INFO] 2026-09-23 00:44:39 final stat file:
+[142 INFO] 2026-09-23 00:44:39  /tmp/amanda_replication_20260922/work/nextpolish/genome.nextpolish.fasta.stat 
+[142 INFO] 2026-09-23 00:44:39 asm stat:
+[142 INFO] 2026-09-23 00:44:39 
+Type           Length (bp)            Count (#)
+N10              4217111                   1
+N20              4217111                   1
+N30              4217111                   1
+N40              4217111                   1
+N50              4217111                   1
+N60              4217111                   1
+N70              4217111                   1
+N80              4217111                   1
+N90              4217111                   1
+
+Min.             4217111                   -
+Max.             4217111                   -
+Ave.             4217111                   -
+Total            4217111                   1
+
+Finished:  2026-09-23T00:44:39Z
+Exit_code: 0
+
+===== 03_map_polished =====
+Log: /tmp/amanda_replication_20260922/logs/03_map_polished.o
+Reference: /tmp/amanda_replication_20260922/outputs/polished.fasta
+Label:     polished
+[bwa_index] Pack FASTA... 0.04 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 1.91 seconds elapse.
+[bwa_index] Update BWT... 0.04 sec
+[bwa_index] Pack forward-only FASTA... 0.03 sec
+[bwa_index] Construct SA from BWT and Occ... 0.66 sec
+[main] Version: 0.7.19-r1273
+[main] CMD: bwa index /tmp/amanda_replication_20260922/work/index_polished/reference.fasta
+[main] Real time: 2.762 sec; CPU: 2.681 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 142804 sequences (40000021 bp)...
+[M::process] read 142982 sequences (40000282 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (1, 69344, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (274, 321, 362)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (98, 538)
+[M::mem_pestat] mean and std.dev: (315.46, 67.44)
+[M::mem_pestat] low and high boundaries for proper pairs: (10, 626)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 142804 reads in 17.882 CPU sec, 4.408 real sec
+[M::process] read 142738 sequences (40000530 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 69463, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (273, 321, 361)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (97, 537)
+[M::mem_pestat] mean and std.dev: (315.23, 67.30)
+[M::mem_pestat] low and high boundaries for proper pairs: (9, 625)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 142982 reads in 16.761 CPU sec, 4.082 real sec
+[M::process] read 142632 sequences (40000069 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 69316, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (273, 321, 361)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (97, 537)
+[M::mem_pestat] mean and std.dev: (315.20, 67.23)
+[M::mem_pestat] low and high boundaries for proper pairs: (9, 625)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 142738 reads in 16.442 CPU sec, 4.017 real sec
+[M::process] read 28844 sequences (8076599 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (1, 69275, 0, 1)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (273, 321, 361)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (97, 537)
+[M::mem_pestat] mean and std.dev: (315.35, 67.22)
+[M::mem_pestat] low and high boundaries for proper pairs: (9, 625)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 142632 reads in 16.594 CPU sec, 4.090 real sec
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 14008, 1, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (273, 321, 361)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (97, 537)
+[M::mem_pestat] mean and std.dev: (315.18, 67.28)
+[M::mem_pestat] low and high boundaries for proper pairs: (9, 625)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 28844 reads in 4.166 CPU sec, 0.971 real sec
+[main] Version: 0.7.19-r1273
+[main] CMD: bwa mem -t 4 /tmp/amanda_replication_20260922/work/index_polished/reference.fasta /tmp/amanda_replication_20260922/input/reads_R1.fastq /tmp/amanda_replication_20260922/input/reads_R2.fastq
+[main] Real time: 17.991 sec; CPU: 72.265 sec
+[bam_sort_core] merging from 0 files and 4 in-memory blocks...
+metric	value
+total_reads	601111
+primary_mapped_pct	99.52
+properly_paired_pct	99.17
+mean_depth	39.254982
+breadth_1x_pct	99.922791
+
+Finished:  2026-09-23T00:45:06Z
+Exit_code: 0
+
+===== 04_merqury =====
+Log: /tmp/amanda_replication_20260922/logs/04_merqury.o
+
+Found 1 command tree.
+
+Counting 362 (estimated) million canonical 21-mers from 2 input files:
+    sequence-file: /tmp/amanda_replication_20260922/input/reads_R1.fastq
+    sequence-file: /tmp/amanda_replication_20260922/input/reads_R2.fastq
+
+SIMPLE MODE
+-----------
+
+  21-mers
+    -> 4398046511104 entries for counts up to 65535.
+    -> 64 Tbits memory used
+
+  379650408 input bases
+    -> expected max count of 1518601, needing 6 extra bits.
+    -> 24 Tbits memory used
+
+  11 TB memory needed
+
+COMPLEX MODE
+------------
+
+prefix     # of   struct   kmers/    segs/      min     data    total
+  bits   prefix   memory   prefix   prefix   memory   memory   memory
+------  -------  -------  -------  -------  -------  -------  -------
+     1     2  P  1862 kB    90 MM   116 kS  8192  B   928 MB   929 MB
+     2     4  P  1823 kB    45 MM    56 kS    16 kB   905 MB   907 MB
+     3     8  P  1790 kB    22 MM    27 kS    32 kB   882 MB   884 MB
+     4    16  P  1771 kB    11 MM    13 kS    64 kB   860 MB   861 MB
+     5    32  P  1776 kB  5793 kM  6703  S   128 kB   837 MB   839 MB
+     6    64  P  1832 kB  2896 kM  3260  S   256 kB   815 MB   816 MB
+     7   128  P  1989 kB  1448 kM  1585  S   512 kB   792 MB   794 MB
+     8   256  P  2348 kB   724 kM   770  S  1024 kB   770 MB   772 MB
+     9   512  P  3112 kB   362 kM   374  S  2048 kB   748 MB   751 MB
+    10  1024  P  4688 kB   181 kM   182  S  4096 kB   728 MB   732 MB  Best Value!
+    11  2048  P  7872 kB    90 kM    88  S  8192 kB   704 MB   711 MB
+    12  4096  P    13 MB    45 kM    43  S    16 MB   688 MB   701 MB
+    13  8192  P    26 MB    22 kM    21  S    32 MB   672 MB   698 MB
+    14    16 kP    51 MB    11 kM    10  S    64 MB   640 MB   691 MB
+    15    32 kP   102 MB  5794  M     5  S   128 MB   640 MB   742 MB
+    16    64 kP   203 MB  2897  M     3  S   256 MB   768 MB   971 MB
+    17   128 kP   406 MB  1449  M     2  S   512 MB  1024 MB  1430 MB
+    18   256 kP   810 MB   725  M     1  S  1024 MB  1024 MB  1834 MB
+    19   512 kP  1620 MB   363  M     1  S  2048 MB  2048 MB  3668 MB
+    20  1024 kP  3240 MB   182  M     1  S  4096 MB  4096 MB  7336 MB
+    21  2048 kP  6480 MB    91  M     1  S  8192 MB  8192 MB    14 GB
+    22  4096 kP    12 GB    46  M     1  S    16 GB    16 GB    28 GB
+
+FINAL CONFIGURATION
+-------------------
+
+Estimated to require 1457 MB memory out of 7670 MB allowed.
+Estimated to require 2 batches.
+
+Configured complex mode for 1.424 GB memory per batch, and up to 2 batches.
+
+Start counting with THREADED method.
+Used 0.271 GB / 7.460 GB to store      1939975 kmers; need 0.003 GB to sort        42054 kmers
+Used 0.380 GB / 7.460 GB to store     31021755 kmers; need 0.020 GB to sort       338614 kmers
+Used 0.490 GB / 7.460 GB to store     60118075 kmers; need 0.040 GB to sort       676854 kmers
+Used 0.602 GB / 7.460 GB to store     89429096 kmers; need 0.058 GB to sort       978098 kmers
+Used 0.712 GB / 7.460 GB to store    118527004 kmers; need 0.078 GB to sort      1301908 kmers
+Used 0.822 GB / 7.460 GB to store    147633473 kmers; need 0.096 GB to sort      1618771 kmers
+
+Input complete.  Writing results to '/tmp/amanda_replication_20260922/work/merqury/reads.meryl', using 4 threads.
+finishIteration()--
+
+Finished counting.
+
+Cleaning up.
+
+Bye.
+read: reads.meryl
+
+No haplotype dbs provided.
+Running Merqury in non-trio mode...
+
+asm1: reference.fasta
+out : original
+
+Get spectra-cn plots and QV stats
+read: reads.meryl
+
+No haplotype dbs provided.
+Running Merqury in non-trio mode...
+
+asm1: polished.fasta
+out : polished
+
+Get spectra-cn plots and QV stats
+
+Finished:  2026-09-23T00:48:16Z
+Exit_code: 0
+
+===== 05_summary =====
+Log: /tmp/amanda_replication_20260922/logs/05_summary.o
+assembly,contigs,total_bp,N50_bp,longest_contig_bp,primary_mapped_pct,properly_paired_pct,mean_depth,breadth_1x_pct,merqury_QV,merqury_error_rate,merqury_completeness_pct
+original,1,4217110,4217110,4217110,99.52,99.17,39.254981,99.922791,51.4374,7.18218e-06,99.8997
+polished,1,4217111,4217111,4217111,99.52,99.17,39.254982,99.922791,51.4374,7.18218e-06,99.9001
+
+Finished:  2026-09-23T00:48:16Z
+Exit_code: 0
+
+===== 06_checksums =====
+Log: /tmp/amanda_replication_20260922/logs/06_checksums.o
+Generated checksums for this run:
+2274f03cbc221cd00f36764c964b99a70fd0674878d182f713f9837db43e7dff  input/reference.fasta
+6de536b326fd6863e04b0c78dc275751f32fee00699ac78623fb06b081f4afcc  input/reads_R1.fastq
+27afee3e81d10e37786e335a238ebc344dd7408fe812099ff0bb00870c2c955f  input/reads_R2.fastq
+f9c2deeaa482ab21e0ec3184764642a0b716553830f5f8a34500279cbd23471f  outputs/original.flagstat.txt
+28c1aabe00c5bfc6c325a92924d913eb81ae6473a47a9d0a2b3397719a6bec6d  outputs/original.mapping_metrics.tsv
+726824ab69a6539e6b29c6f99489c47b6cbb7214a35ef1daa060ecb32c67c838  outputs/original.merqury.completeness.stats
+803e95254233c644a1657cb26e46e695baf371f4034533960b0082d4aa6fffae  outputs/original.merqury.qv
+7c20d09fc082a4de495ad108df44e3eb846557fdd57c6c86f042e8c7824b67aa  outputs/polished.fasta
+f9c2deeaa482ab21e0ec3184764642a0b716553830f5f8a34500279cbd23471f  outputs/polished.flagstat.txt
+3ff230385b7853d97300451163f83b52abc4f228fdbdf530f2808174a1e2fa39  outputs/polished.mapping_metrics.tsv
+d0d3c9a97785158cc8c02ad58824f691da65b1171b9c933a8f3eb621dfca08ac  outputs/polished.merqury.completeness.stats
+16c1ca7f36479c96c8a5811e6914dbbd3f9f687983f16ae163fa3b9f2b3fa559  outputs/polished.merqury.qv
+27fa185d6481a7545e0519b487d9e532e937512e587edfd8e2a39a37d1c8d6ea  outputs/summary.csv
+
+Canonical checksum file is present and was NOT overwritten:
+  /tmp/amanda_replication_20260922/CHECKSUMS.txt
+
+Finished:  2026-09-23T00:48:19Z
+Exit_code: 0
+
+Analysis complete.
+Scientific outputs : /tmp/amanda_replication_20260922/outputs
+Run checksums      : /tmp/amanda_replication_20260922/CHECKSUMS.generated.txt
+Canonical checksums: /tmp/amanda_replication_20260922/CHECKSUMS.txt
+
+Verify against the canonical run with:
+  bash verify.sh
+
+
+===== evidence/verification.log =====
+Checking regenerated files against canonical SHA-256 values...
+input/reference.fasta: OK
+input/reads_R1.fastq: OK
+input/reads_R2.fastq: OK
+outputs/original.flagstat.txt: OK
+outputs/original.mapping_metrics.tsv: OK
+outputs/original.merqury.completeness.stats: OK
+outputs/original.merqury.qv: OK
+outputs/polished.fasta: OK
+outputs/polished.flagstat.txt: OK
+outputs/polished.mapping_metrics.tsv: OK
+outputs/polished.merqury.completeness.stats: OK
+outputs/polished.merqury.qv: OK
+outputs/summary.csv: OK
+
+The current run also produced:
+  CHECKSUMS.generated.txt
+REPRODUCIBILITY CHECK PASSED
+
+
+===== evidence/comparison.log =====
+{
+  "files_checked": 13,
+  "byte_identical_files": 13,
+  "summary_exact_match": true
+}
+MATCH input/reference.fasta
+MATCH input/reads_R1.fastq
+MATCH input/reads_R2.fastq
+MATCH outputs/original.flagstat.txt
+MATCH outputs/original.mapping_metrics.tsv
+MATCH outputs/original.merqury.completeness.stats
+MATCH outputs/original.merqury.qv
+MATCH outputs/polished.fasta
+MATCH outputs/polished.flagstat.txt
+MATCH outputs/polished.mapping_metrics.tsv
+MATCH outputs/polished.merqury.completeness.stats
+MATCH outputs/polished.merqury.qv
+MATCH outputs/summary.csv
